@@ -1,0 +1,4 @@
+.env
+build
+dist
+app/predacons.egg-info
