@@ -5,7 +5,7 @@ with open("app/README.md", "r") as f:
 
 setup(
     name="predacons",
-    version="0.0.01",
+    version="0.0.1",
     description="A python library based on transformers for transfer learning",
     package_dir={"": "app"},
     packages=find_packages(where="app"),
