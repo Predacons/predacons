@@ -2,4 +2,10 @@
 build
 dist
 app/predacons.egg-info
+app/__pycache__
+app/venv
+app/predacons/__pycache__
+app/predacons/venv
+app/predacons/src/__pycache__
+app/predacons/src/venv
 myenv

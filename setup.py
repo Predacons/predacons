@@ -1,11 +1,13 @@
 from setuptools import find_packages, setup
-
+import pathlib
 with open("README.md", "r") as f:
     long_description = f.read()
 
+HERE = pathlib.Path(__file__).parent
+
 setup(
     name="predacons",
-    version="0.0.1",
+    version="0.0.102",
     description="A python library based on transformers for transfer learning",
     package_dir={"": "app"},
     packages=find_packages(where="app"),
@@ -20,7 +22,7 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",
     ],
-    install_requires=["bson >= 0.5.10"],
+    install_requires=(HERE/"requirements.txt").read_text().splitlines(),
     extras_require={
         "dev": ["pytest>=7.0", "twine>=4.0.2"],
     },

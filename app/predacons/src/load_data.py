@@ -4,6 +4,7 @@ import re
 from PyPDF2 import PdfReader
 import os
 import docx
+
 class LoadData:
     def __read_pdf(file_path):
         with open(file_path, "rb") as file:
