@@ -6,8 +6,10 @@ pip install predacons
 ```python
 from predacons import predacons
 predacons.rollout()
+predacons.read_documents_from_directory()
+predacons.clean_text()
 predacons.train()
-predacons.predict()
+predacons.generate_text()
 ```
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
