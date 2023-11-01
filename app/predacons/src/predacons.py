@@ -21,7 +21,7 @@ def rollout():
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
     print("    max_length -- Max length")
-    print("    trust_remote_code -- Trust remote code"")
+    print("    trust_remote_code -- Trust remote code")
     print("\nPredacons rollout !!!")
 
 # Load data
