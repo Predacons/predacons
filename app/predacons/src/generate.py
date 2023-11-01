@@ -1,8 +1,12 @@
-from transformers import AutoModelForPreTraining, AutoTokenizer
+from transformers import AutoModelForPreTraining, AutoTokenizer,AutoModelForCausalLM
 
 class Generate:
-    def __load_model(model_path):
-        model = AutoModelForPreTraining.from_pretrained(model_path)
+    def __load_model(model_path, trust_remote_code=False):
+        model = None
+        try:
+            model = AutoModelForPreTraining.from_pretrained(model_path,trust_remote_code=trust_remote_code)
+        except:
+            model = AutoModelForCausalLM.from_pretrained(model_path,trust_remote_code=trust_remote_code)
         return model
 
 
@@ -10,9 +14,9 @@ class Generate:
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
         return tokenizer
 
-    def __generate_text(model_path, sequence, max_length):
+    def __generate_text(model_path, sequence, max_length,trust_remote_code=False):
         
-        model = Generate.__load_model(model_path)
+        model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code)
         tokenizer = Generate.__load_tokenizer(model_path)
         ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
         final_outputs = model.generate(
@@ -25,5 +29,5 @@ class Generate:
         )
         print(tokenizer.decode(final_outputs[0], skip_special_tokens=True))
 
-    def generate_text(model_path, sequence, max_length):
-        Generate.__generate_text(model_path, sequence, max_length)
+    def generate_text(model_path, sequence, max_length,trust_remote_code=False):
+        Generate.__generate_text(model_path, sequence, max_length,trust_remote_code=trust_remote_code)

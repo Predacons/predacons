@@ -34,15 +34,17 @@ def train(train_file_path,model_name,
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
-          save_steps):
+          save_steps,
+          trust_remote_code = False):
     TrainPredacons.train(train_file_path,model_name,
           output_dir,
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
-          save_steps)
+          save_steps,
+          trust_remote_code = trust_remote_code)
     
 # Generate text
-def generate_text(model_path, sequence, max_length):
-    Generate.generate_text(model_path, sequence, max_length)
+def generate_text(model_path, sequence, max_length,trust_remote_code = False):
+    Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code)
 

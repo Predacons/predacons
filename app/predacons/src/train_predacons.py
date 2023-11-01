@@ -1,5 +1,5 @@
 from transformers import TextDataset, DataCollatorForLanguageModeling
-from transformers import AutoTokenizer,AutoModelForPreTraining
+from transformers import AutoTokenizer,AutoModelForPreTraining,AutoModelForCausalLM
 from transformers import Trainer, TrainingArguments
 
 class TrainPredacons:
@@ -24,7 +24,7 @@ class TrainPredacons:
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
-          save_steps):
+          save_steps,trust_remote_code = False):
   
   
         tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -32,8 +32,11 @@ class TrainPredacons:
         data_collator = TrainPredacons.__load_data_collator(tokenizer)
 
         tokenizer.save_pretrained(output_dir)
-            
-        model = AutoModelForPreTraining.from_pretrained(model_name)
+        model = None
+        try:
+            model = AutoModelForPreTraining.from_pretrained(model_name,trust_remote_code=trust_remote_code)
+        except:
+            model = AutoModelForCausalLM.from_pretrained(model_name,trust_remote_code=trust_remote_code)
 
         model.save_pretrained(output_dir)
 
@@ -59,5 +62,5 @@ class TrainPredacons:
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
-          save_steps):
-        TrainPredacons.__train(train_file_path,model_name,output_dir,overwrite_output_dir,per_device_train_batch_size,num_train_epochs,save_steps)
+          save_steps,trust_remote_code = False):
+        TrainPredacons.__train(train_file_path,model_name,output_dir,overwrite_output_dir,per_device_train_batch_size,num_train_epochs,save_steps,trust_remote_code = trust_remote_code)
