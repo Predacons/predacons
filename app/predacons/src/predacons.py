@@ -16,10 +16,12 @@ def rollout():
     print("    per_device_train_batch_size -- Per device train batch size")
     print("    num_train_epochs -- Number of train epochs")
     print("    save_steps -- Save steps")
+    print("    trust_remote_code -- Trust remote code")
     print("\ngenerate_text -- Generate text")
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
     print("    max_length -- Max length")
+    print("    trust_remote_code -- Trust remote code"")
     print("\nPredacons rollout !!!")
 
 # Load data
