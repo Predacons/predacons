@@ -13,9 +13,8 @@ class Generate:
     def __load_tokenizer(tokenizer_path):
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_path)
         return tokenizer
-
-    def __generate_text(model_path, sequence, max_length,trust_remote_code=False):
-        
+    
+    def __generate_output(model_path, sequence, max_length,trust_remote_code=False):
         model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code)
         tokenizer = Generate.__load_tokenizer(model_path)
         ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
@@ -27,7 +26,16 @@ class Generate:
             top_k=50,
             top_p=0.95,
         )
+        return final_outputs,tokenizer
+    
+    def __generate_text(model_path, sequence, max_length,trust_remote_code=False):
+        final_outputs,tokenizer = Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code)
+        
         print(tokenizer.decode(final_outputs[0], skip_special_tokens=True))
+        return (tokenizer.decode(final_outputs[0], skip_special_tokens=True))
 
+    def generate_output(model_path, sequence, max_length,trust_remote_code=False):
+        return Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code)
+    
     def generate_text(model_path, sequence, max_length,trust_remote_code=False):
-        Generate.__generate_text(model_path, sequence, max_length,trust_remote_code=trust_remote_code)
+        return Generate.__generate_text(model_path, sequence, max_length,trust_remote_code=trust_remote_code)

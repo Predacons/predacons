@@ -6,5 +6,7 @@ from .src.predacons import (
     read_documents_from_directory,
     clean_text,
     train,
-    generate_text
+    trainer,
+    generate_text,
+    generate_output,
 )

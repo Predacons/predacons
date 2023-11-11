@@ -19,14 +19,12 @@ class TrainPredacons:
         )
         return data_collator
     
-    def __train(train_file_path,model_name,
+    def __trainer(train_file_path,model_name,
           output_dir,
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
           save_steps,trust_remote_code = False):
-  
-  
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         train_dataset = TrainPredacons.__load_dataset(train_file_path, tokenizer)
         data_collator = TrainPredacons.__load_data_collator(tokenizer)
@@ -53,10 +51,38 @@ class TrainPredacons:
                 data_collator=data_collator,
                 train_dataset=train_dataset,
         )
+        return trainer
+
+    def __train(train_file_path,model_name,
+          output_dir,
+          overwrite_output_dir,
+          per_device_train_batch_size,
+          num_train_epochs,
+          save_steps,trust_remote_code = False):
+
+        trainer = TrainPredacons.__trainer(train_file_path,model_name,
+            output_dir,
+            overwrite_output_dir,
+            per_device_train_batch_size,
+            num_train_epochs,
+            save_steps,trust_remote_code = trust_remote_code)
             
         trainer.train()
         trainer.save_model()
 
+    def trainer(train_file_path,model_name,
+          output_dir,
+          overwrite_output_dir,
+          per_device_train_batch_size,
+          num_train_epochs,
+          save_steps,trust_remote_code = False):
+        return TrainPredacons.__trainer(train_file_path,model_name,
+            output_dir,
+            overwrite_output_dir,
+            per_device_train_batch_size,
+            num_train_epochs,
+            save_steps,trust_remote_code = trust_remote_code)
+    
     def train(train_file_path,model_name,
           output_dir,
           overwrite_output_dir,
