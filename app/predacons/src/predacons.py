@@ -6,6 +6,8 @@ def rollout():
     print("Predacons rollout !!!")
     print("\nread_documents_from_directory -- Load data from directory")
     print("    directory -- Directory path")
+    print("\nread_multiple_files -- Load data from multiple files")
+    print("    file_paths -- list of File paths")
     print("\nclean_text -- Clean text")
     print("    text -- Text")
     print("\ntrain -- Train Predacons")
@@ -41,6 +43,10 @@ def rollout():
 # Load data
 def read_documents_from_directory(directory,encoding="utf-8"):
     return LoadData.read_documents_from_directory(directory,encoding)
+
+def read_multiple_files(file_paths):
+    return LoadData.read_multiple_files(file_paths)
+
 def clean_text(text):
     return LoadData.clean_text(text)
 

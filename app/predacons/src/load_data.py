@@ -40,3 +40,14 @@ class LoadData:
             elif filename.endswith(".txt"):
                 combined_text += LoadData.__read_txt(file_path,encoding)
         return combined_text
+    
+    def read_multiple_files(file_paths):
+        combined_text = ""
+        for file_path in file_paths:
+            if file_path.endswith(".pdf"):
+                combined_text += LoadData.__read_pdf(file_path)
+            elif file_path.endswith(".docx"):
+                combined_text += LoadData.__read_word(file_path)
+            elif file_path.endswith(".txt"):
+                combined_text += LoadData.__read_txt(file_path)
+        return combined_text
