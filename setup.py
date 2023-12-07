@@ -7,7 +7,7 @@ HERE = pathlib.Path(__file__).parent
 
 setup(
     name="predacons",
-    version="0.0.107",
+    version="0.0.108",
     description="A python library based on transformers for transfer learning",
     package_dir={"": "app"},
     packages=find_packages(where="app"),
@@ -18,12 +18,12 @@ setup(
     author_email="shouryashashank@gmail.com",
     license="MIT",
     classifiers=[
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: MIT License",   
         "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",
-    ],
+    ],  
     install_requires=["bson >= 0.5.10",
-                    "pandas >= 2.1.1",
+                    "pandas >= 1.5.3",
                     "numpy >= 1.24.1",
                     "regex >= 2021.4.4",
                     "PyPDF2 >= 3.0.1",
