@@ -30,7 +30,8 @@ setup(
                     "docx >= 0.2.4",
                     "python-docx >= 1.0.1",
                     "transformers >= 4.29.1",
-                    "einops >= 0.7.0"]
+                    "einops >= 0.7.0",
+                    "openai >= 1.12.0"]
 ,
     extras_require={
         "dev": ["pytest>=7.0", "twine>=4.0.2"],
