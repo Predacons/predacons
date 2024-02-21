@@ -1,6 +1,7 @@
 from .load_data import LoadData
 from .train_predacons import TrainPredacons
 from .generate import Generate
+from .data_preparation import DataPreparation
 
 def rollout():
     print("Predacons rollout !!!")
@@ -38,6 +39,12 @@ def rollout():
     print("    sequence -- Sequence")
     print("    max_length -- Max length")
     print("    trust_remote_code -- Trust remote code")
+    print("\ngenerate_text_data_source -- Generate text data source")
+    print("    client -- openai client")
+    print("    gpt_model -- GPT model used for generation")
+    print("    prompt -- Prompt to generate data source")
+    print("    number_of_examples -- Number of examples")
+    print("    temperature -- Temperature (default 0.5)")
     print("\nPredacons rollout !!!")
 
 # Load data
@@ -89,4 +96,8 @@ def generate_text(model_path, sequence, max_length,trust_remote_code = False):
 # Generate output
 def generate_output(model_path, sequence, max_length,trust_remote_code = False):
     return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code)
+
+# Data preparation
+def generate_text_data_source(client,gpt_model,prompt,number_of_examples,temperature =0.5):
+    return DataPreparation.generate_text_data_source(client,gpt_model,prompt,number_of_examples,temperature)
 
