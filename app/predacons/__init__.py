@@ -10,4 +10,5 @@ from .src.predacons import (
     trainer,
     generate_text,
     generate_output,
+    generate_text_data_source
 )
