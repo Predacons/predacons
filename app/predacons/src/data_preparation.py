@@ -51,6 +51,9 @@ class DataPreparation:
         print(f'Generating data source for prompt: {sequence}')
         for i in range(int(number_of_examples)):
             example=DataPreparation.__generate_data_source_llm(model_path, sequence, max_length,prev_examples,trust_remote_code = trust_remote_code)
+            prev_examples.append(example)
+        training_data = "\n \n \n".join(prev_examples)
+        return training_data
     
     def generate_text_data_source_openai(client,gpt_model,prompt,number_of_examples,temperature =0.5):
         return DataPreparation.__generate_text_data_source_openai(client,gpt_model,prompt,number_of_examples,temperature)
