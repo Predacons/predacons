@@ -58,7 +58,7 @@ class TrainPredacons:
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
-          save_steps,trust_remote_code = False):
+          save_steps,trust_remote_code = False,resume_from_checkpoint=True):
 
         trainer = TrainPredacons.__trainer(train_file_path,model_name,
             output_dir,
@@ -67,7 +67,7 @@ class TrainPredacons:
             num_train_epochs,
             save_steps,trust_remote_code = trust_remote_code)
             
-        trainer.train()
+        trainer.train(resume_from_checkpoint=True)
         trainer.save_model()
 
     def trainer(train_file_path,model_name,
@@ -88,5 +88,5 @@ class TrainPredacons:
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
-          save_steps,trust_remote_code = False):
-        TrainPredacons.__train(train_file_path,model_name,output_dir,overwrite_output_dir,per_device_train_batch_size,num_train_epochs,save_steps,trust_remote_code = trust_remote_code)
+          save_steps,trust_remote_code = False,resume_from_checkpoint = True):
+        TrainPredacons.__train(train_file_path,model_name,output_dir,overwrite_output_dir,per_device_train_batch_size,num_train_epochs,save_steps,trust_remote_code = trust_remote_code,resume_from_checkpoint=resume_from_checkpoint)
