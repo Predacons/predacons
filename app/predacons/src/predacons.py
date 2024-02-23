@@ -64,14 +64,16 @@ def train(train_file_path,model_name,
           per_device_train_batch_size,
           num_train_epochs,
           save_steps,
-          trust_remote_code = False):
+          trust_remote_code = False,
+          resume_from_checkpoint=True):
     TrainPredacons.train(train_file_path,model_name,
           output_dir,
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
           save_steps,
-          trust_remote_code = trust_remote_code)
+          trust_remote_code = trust_remote_code,
+          resume_from_checkpoint=resume_from_checkpoint)
 
 # get trainer
 def trainer(train_file_path,model_name,
