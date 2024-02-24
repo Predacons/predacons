@@ -66,8 +66,11 @@ class TrainPredacons:
             per_device_train_batch_size,
             num_train_epochs,
             save_steps,trust_remote_code = trust_remote_code)
-            
-        trainer.train(resume_from_checkpoint=True)
+        try:
+            trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+        except:
+            print('Failed to resume from checkpoint. training from scratch.')
+            trainer.train()
         trainer.save_model()
 
     def trainer(train_file_path,model_name,
