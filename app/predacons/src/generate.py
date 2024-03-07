@@ -39,3 +39,6 @@ class Generate:
     
     def generate_text(model_path, sequence, max_length,trust_remote_code=False):
         return Generate.__generate_text(model_path, sequence, max_length,trust_remote_code=trust_remote_code)
+    
+    def load_tokenizer(tokenizer_path):
+        return Generate.__load_tokenizer(tokenizer_path)
