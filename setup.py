@@ -32,7 +32,7 @@ setup(
                     "transformers >= 4.29.1",
                     "einops >= 0.7.0",
                     "openai >= 1.12.0",
-                    "torch >= 2.1.2",
+                    # "torch >= 2.1.2", removed torch from install_requires so that it does not cuda version of torch
                     "typing-extensions >=4.9.0"],
 
     extras_require={

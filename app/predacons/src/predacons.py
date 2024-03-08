@@ -106,24 +106,26 @@ def trainer(train_file_path,model_name,
 # Generate text
 def generate_text(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None):
     if use_fast_generation:
-        if draft_model_name:
-            if draft_model_name == None:
-                print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
-                draft_model_name = model_path
-            return GPTFast.generate_text_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
-        else:
-            return Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
+        print("generate_text using fast generation")
+        if draft_model_name == None:
+            print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
+            draft_model_name = model_path
+        return GPTFast.generate_text_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
+    else:
+        print("generate_text using default generation")
+        return Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
 
 # Generate output
 def generate_output(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None):
     if use_fast_generation:
-        if draft_model_name:
-            if draft_model_name == None:
-                print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
-                draft_model_name = model_path
-            return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
-        else:
-            return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
+        print("generate_output using fast generation")
+        if draft_model_name == None:
+            print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
+            draft_model_name = model_path
+        return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
+    else:
+        print("generate_output using default generation")
+        return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
 
 # Data preparation
 def generate_text_data_source_openai(client,gpt_model,prompt,number_of_examples,temperature =0.5):
