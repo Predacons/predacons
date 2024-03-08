@@ -2,6 +2,7 @@ from .load_data import LoadData
 from .train_predacons import TrainPredacons
 from .generate import Generate
 from .data_preparation import DataPreparation
+from .speculative_fast_generation import GPTFast
 
 def rollout():
     print("Predacons rollout !!!")
@@ -34,12 +35,16 @@ def rollout():
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
     print("    max_length -- Max length")
-    print("    trust_remote_code -- Trust remote code")
+    print("    trust_remote_code -- Trust remote code (default False)")
+    print("    use_fast_generation -- Use fast generation using speculative decoding (default False)")
+    print("    draft_model_name -- Draft model name / path (default None)")
     print("\ngenerate_output -- returns output and tokenizer")
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
     print("    max_length -- Max length")
-    print("    trust_remote_code -- Trust remote code")
+    print("    trust_remote_code -- Trust remote code (default False)")
+    print("    use_fast_generation -- Use fast generation using speculative decoding (default False)")
+    print("    draft_model_name -- Draft model name / path (default None)")
     print("\ngenerate_text_data_source_openai -- Generate text data source using openai")
     print("    client -- openai client")
     print("    gpt_model -- GPT model used for generation")
@@ -99,12 +104,28 @@ def trainer(train_file_path,model_name,
           trust_remote_code = trust_remote_code)
     
 # Generate text
-def generate_text(model_path, sequence, max_length,trust_remote_code = False):
-    return Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code)
+def generate_text(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None):
+    if use_fast_generation:
+        print("generate_text using fast generation")
+        if draft_model_name == None:
+            print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
+            draft_model_name = model_path
+        return GPTFast.generate_text_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
+    else:
+        print("generate_text using default generation")
+        return Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
 
 # Generate output
-def generate_output(model_path, sequence, max_length,trust_remote_code = False):
-    return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code)
+def generate_output(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None):
+    if use_fast_generation:
+        print("generate_output using fast generation")
+        if draft_model_name == None:
+            print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
+            draft_model_name = model_path
+        return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
+    else:
+        print("generate_output using default generation")
+        return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
 
 # Data preparation
 def generate_text_data_source_openai(client,gpt_model,prompt,number_of_examples,temperature =0.5):
