@@ -34,6 +34,18 @@ class Generate:
         print(tokenizer.decode(final_outputs[0], skip_special_tokens=True))
         return (tokenizer.decode(final_outputs[0], skip_special_tokens=True))
 
+    def __generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=False):
+        ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
+        final_outputs = model.generate(
+            ids,
+            do_sample=True,
+            max_length=max_length,
+            pad_token_id=model.config.eos_token_id,
+            top_k=50,
+            top_p=0.95,
+        )
+        return final_outputs,tokenizer
+
     def generate_output(model_path, sequence, max_length,trust_remote_code=False):
         return Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code)
     
@@ -42,3 +54,9 @@ class Generate:
     
     def load_tokenizer(tokenizer_path):
         return Generate.__load_tokenizer(tokenizer_path)
+    
+    def load_model(model_path,trust_remote_code=False):
+        return Generate.__load_model(model_path,trust_remote_code=trust_remote_code)
+    
+    def generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=False):
+        return Generate.__generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)

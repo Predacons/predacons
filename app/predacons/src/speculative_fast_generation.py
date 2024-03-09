@@ -62,6 +62,13 @@ class GPTFast:
         output = model.generate(cur_tokens=input_tokens, max_tokens=max_length, speculate_k=6)
         return output,tokenizer
     
+    def __generate_output_from_model(model, tokenizer, sequence, max_length):
+        print("Experimental!!! Generating output using gpt fast with speculative decoding upto 6x faster than normal gpt generation. if fails go back to normal gpt generation.")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        input_tokens = tokenizer.encode(sequence, return_tensors="pt").to(device)
+        output = model.generate(cur_tokens=input_tokens, max_tokens=max_length, speculate_k=6)
+        return output,tokenizer
+    
     def gpt_fast(model_name:str ,trust_remote_code=False, **spec_dec_kwargs):
         return GPTFast.__gpt_fast(model_name, trust_remote_code=trust_remote_code, **spec_dec_kwargs)
     
@@ -72,3 +79,10 @@ class GPTFast:
         output,tokenizer = GPTFast.__generate_output_fast(model_name, draft_model_name, sequence, max_length, trust_remote_code=trust_remote_code)
         print(tokenizer.decode(output[0], skip_special_tokens=True))
         return tokenizer.decode(output[0], skip_special_tokens=True)
+    
+    def load_model(model_path,draft_model_name,trust_remote_code=False):
+        return GPTFast.__gpt_fast(model_path, trust_remote_code=trust_remote_code, draft_model_name=draft_model_name, sample_function=GPTFast.__argmax)
+    
+    def generate_output_from_model(model, tokenizer, sequence, max_length):
+        return GPTFast.__generate_output_from_model(model, tokenizer, sequence, max_length)
+    
