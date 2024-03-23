@@ -14,6 +14,24 @@ def rollout():
     print("    file_paths -- list of File paths")
     print("\nclean_text -- Clean text")
     print("    text -- Text")
+    print("\ntrain_legacy -- Train Predacons")
+    print("    train_file_path -- Train file path")
+    print("    model_name -- Model name")
+    print("    output_dir -- Output directory")
+    print("    overwrite_output_dir -- Overwrite output directory")
+    print("    per_device_train_batch_size -- Per device train batch size")
+    print("    num_train_epochs -- Number of train epochs")
+    print("    save_steps -- Save steps")
+    print("    trust_remote_code -- Trust remote code")
+    print("\ntrainer_legacy -- returns trainer")
+    print("    train_file_path -- Train file path")
+    print("    model_name -- Model name")
+    print("    output_dir -- Output directory")
+    print("    overwrite_output_dir -- Overwrite output directory")
+    print("    per_device_train_batch_size -- Per device train batch size")
+    print("    num_train_epochs -- Number of train epochs")
+    print("    save_steps -- Save steps")
+    print("    trust_remote_code -- Trust remote code")
     print("\ntrain -- Train Predacons")
     print("    train_file_path -- Train file path")
     print("    model_name -- Model name")
@@ -96,7 +114,7 @@ def clean_text(text):
     return LoadData.clean_text(text)
 
 # Train Predacons
-def train(train_file_path,model_name,
+def train_legacy(train_file_path,model_name,
           output_dir,
           overwrite_output_dir,
           per_device_train_batch_size,
@@ -104,31 +122,39 @@ def train(train_file_path,model_name,
           save_steps,
           trust_remote_code = False,
           resume_from_checkpoint=True):
-    TrainPredacons.train(train_file_path,model_name,
-          output_dir,
-          overwrite_output_dir,
-          per_device_train_batch_size,
-          num_train_epochs,
-          save_steps,
-          trust_remote_code = trust_remote_code,
-          resume_from_checkpoint=resume_from_checkpoint)
+    TrainPredacons.train(train_file_path = train_file_path,
+        model_name = model_name,
+        output_dir = output_dir,
+        overwrite_output_dir = overwrite_output_dir,
+        per_device_train_batch_size = per_device_train_batch_size,
+        num_train_epochs = num_train_epochs,
+        save_steps = save_steps,
+        trust_remote_code = trust_remote_code,
+        resume_from_checkpoint=resume_from_checkpoint)
 
 # get trainer
-def trainer(train_file_path,model_name,
+def trainer_legacy(train_file_path,model_name,
           output_dir,
           overwrite_output_dir,
           per_device_train_batch_size,
           num_train_epochs,
           save_steps,
           trust_remote_code = False):
-    return TrainPredacons.trainer(train_file_path,model_name,
-          output_dir,
-          overwrite_output_dir,
-          per_device_train_batch_size,
-          num_train_epochs,
-          save_steps,
-          trust_remote_code = trust_remote_code)
-    
+    return TrainPredacons.trainer(train_file_path=train_file_path,
+        model_name = model_name,
+        output_dir = output_dir,
+        overwrite_output_dir = overwrite_output_dir,
+        per_device_train_batch_size = per_device_train_batch_size,
+        num_train_epochs = num_train_epochs,
+        save_steps = save_steps,
+        trust_remote_code = trust_remote_code)
+
+def train(*args, **kwargs):
+    return TrainPredacons.train(*args, **kwargs)
+
+def trainer(*args, **kwargs):
+    return TrainPredacons.trainer(*args, **kwargs)
+
 # Generate text
 def generate_text(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None):
     print("For repetitive generation first load model and then use text_generate. It will be faster.")
