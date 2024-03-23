@@ -7,7 +7,7 @@ HERE = pathlib.Path(__file__).parent
 
 setup(
     name="predacons",
-    version="0.0.116",
+    version="0.0.117",
     description="A python library based on transformers for transfer learning",
     package_dir={"": "app"},
     packages=find_packages(where="app"),
@@ -16,9 +16,9 @@ setup(
     url="https://github.com/shouryashashank/predacons",
     author="shouryashashank",
     author_email="shouryashashank@gmail.com",
-    license="MIT",
+    license="AGPL-3.0",
     classifiers=[
-        "License :: OSI Approved :: MIT License",   
+        "License :: AGPL-3.0 License",   
         "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",
     ],  
@@ -33,7 +33,10 @@ setup(
                     "einops >= 0.7.0",
                     "openai >= 1.12.0",
                     # "torch >= 2.1.2", removed torch from install_requires so that it does not cuda version of torch
-                    "typing-extensions >=4.9.0"],
+                    "typing-extensions >=4.9.0",
+                    # "bitsandbytes --index-url https://pypi.org/simple/",removed bitsandbytes from install_requires so that it does not cuda version of torch
+                    "peft >= 0.8.2",
+                    "trl >= 0.8.1"],
 
     extras_require={
         "dev": ["pytest>=7.0", "twine>=4.0.2"],
