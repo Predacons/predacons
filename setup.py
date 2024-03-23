@@ -16,9 +16,9 @@ setup(
     url="https://github.com/shouryashashank/predacons",
     author="shouryashashank",
     author_email="shouryashashank@gmail.com",
-    license="AGPL-3.0",
+    license="AGPLv3+",
     classifiers=[
-        "License :: AGPL-3.0 License",   
+        "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",   
         "Programming Language :: Python :: 3.10",
         "Operating System :: OS Independent",
     ],  
