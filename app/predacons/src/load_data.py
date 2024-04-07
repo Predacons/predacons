@@ -26,6 +26,9 @@ class LoadData:
             text = file.read()
         return text
     
+    def __read_csv(file_path,encoding="utf-8"):
+        return pd.read_csv(file_path,encoding=encoding)
+    
     def clean_text(text):
         return re.sub(r'\n+', '\n', text).strip()
     
@@ -51,3 +54,6 @@ class LoadData:
             elif file_path.endswith(".txt"):
                 combined_text += LoadData.__read_txt(file_path)
         return combined_text
+    
+    def read_csv(file_path,encoding="utf-8"):
+        return LoadData.__read_csv(file_path,encoding)
