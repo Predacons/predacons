@@ -209,10 +209,15 @@ def generate(*args, **kwargs):
         sequence = kwargs['sequence']
         max_length = kwargs.get('max_length', 50)
         trust_remote_code = kwargs.get('trust_remote_code', False)
-        if type(model) == torch._dynamo.eval_frame.OptimizedModule:
-            print("generate_output using fast generation")
-            return GPTFast.generate_output_from_model(model, tokenizer, sequence, max_length)
-        else:
+        try:
+            if type(model) == torch._dynamo.eval_frame.OptimizedModule:
+                print("generate_output using fast generation")
+                return GPTFast.generate_output_from_model(model, tokenizer, sequence, max_length)
+            else:
+                return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+        except Exception as e:
+            print("Exception occurred while loading torch._dynamo.eval_frame.OptimizedModule :"+e)
+            print("generate_output using default generation")
             return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
     else:
         raise ValueError("Invalid arguments")
