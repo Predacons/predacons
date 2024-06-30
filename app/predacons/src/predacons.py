@@ -4,6 +4,7 @@ from .generate import Generate
 from .data_preparation import DataPreparation
 from .speculative_fast_generation import GPTFast
 import torch
+import pandas as pd
 
 def rollout():
     print("Predacons rollout !!!")
@@ -14,6 +15,8 @@ def rollout():
     print("    file_paths -- list of File paths")
     print("\nclean_text -- Clean text")
     print("    text -- Text")
+    print("\nread_csv -- Read csv file")
+    print("    file_path -- File path")
     print("\ntrain_legacy -- Train Predacons")
     print("    train_file_path -- Train file path")
     print("    model_name -- Model name")
@@ -112,6 +115,9 @@ def read_multiple_files(file_paths):
 
 def clean_text(text):
     return LoadData.clean_text(text)
+
+def read_csv(file_path,encoding="utf-8"):
+    return LoadData.read_csv(file_path,encoding)
 
 # Train Predacons
 def train_legacy(train_file_path,model_name,

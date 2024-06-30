@@ -5,7 +5,41 @@ from peft import LoraConfig
 from datasets import load_dataset
 import torch
 from trl import SFTTrainer
+
 class TrainPredacons:
+    def create_formatting_func(train_dataset):
+        feature_list  = []
+        if feature not in ['input_ids', 'attention_mask', 'Unnamed: 0']:
+                feature_list.append(feature)
+        print(feature_list)
+        def auto_formatting_func(example):
+            func_str =''
+            for feature in feature_list:
+                feature_str = f"{feature}: {example[feature][0]}\n"
+                func_str = func_str + feature_str
+            text = f"{func_str}"
+            return [text]
+
+        return auto_formatting_func
+
+    def create_preprocess_function(train_dataset,tokenizer):
+        feature_list  = []
+        for feature in  list(train_dataset['train'].features):
+            if feature not in ['input_ids', 'attention_mask', 'Unnamed: 0']:
+                feature_list.append(feature)
+        print(feature_list)
+        def auto_processing_function(example):
+            combined_text = "[CLS]"
+            for feature in feature_list:
+                print(feature)
+                print(example[feature])
+                combined_text = combined_text + feature + ": " + str(example[feature])
+                if feature != feature_list[-1]:
+                    combined_text = combined_text + "[SEP]"
+            print(combined_text)
+            return tokenizer(combined_text, truncation=True, padding="longest")
+        return auto_processing_function
+
     def formatting_func(example):
         text = f"{example['text'][0]}"
         return [text]
@@ -148,21 +182,35 @@ class TrainPredacons:
 
         # dataset configuration
         # todo : add proper data set configuration with custom function
+        train_file_type = kwargs.get('train_file_type',None)
         train_file_path = kwargs.get('train_file_path',None)
         train_dataset = kwargs.get('train_dataset',None)
         if train_file_path != None and train_dataset == None:
-            train_dataset = load_dataset("text", data_files={"train": train_file_path})
-            train_dataset = train_dataset.map(lambda samples: tokenizer(samples["text"]), batched=True)
+            if train_file_type not in ("text","csv","json"):
+                print("file type not supported use text,csv or json trying to process as text")
+                train_file_type = "text"
+            train_dataset = load_dataset(train_file_type, data_files={"train": train_file_path})
+            if train_file_type == "text":
+                train_dataset = train_dataset.map(lambda samples: tokenizer(samples["text"]), batched=True)
+            else:
+                preprocess_function = TrainPredacons.create_preprocess_function(train_dataset,tokenizer)
+                train_dataset = train_dataset.map(preprocess_function, batched=True)
         else:
             print("please provide train_file_path to load dataset other sources will be added in next release")
         print(f"train_dataset: {train_dataset}")
-
+        try:
+            print("using custom formatting function")
+            formatting_func = TrainPredacons.create_formatting_func(train_dataset)
+        except:
+            print("using default formatting function")
+            formatting_func = TrainPredacons.formatting_func
+        print(f"formatting_func: {formatting_func}")
         trainer = SFTTrainer(
             model=model,
             train_dataset=train_dataset["train"],
             args=training_args,
             peft_config=peft_config,
-            formatting_func = TrainPredacons.formatting_func
+            formatting_func = formatting_func
 
         )
         return trainer
