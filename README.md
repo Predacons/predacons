@@ -1,19 +1,52 @@
 # Predacons
-Predacons is a python library based on transformer used fro transfer learning
+Predacons is a Python library based on transformers used for transfer learning. It offers a suite of tools for data processing, model training, and text generation, making it easier to apply advanced machine learning techniques to your projects.
+
 ## Installation
+To install Predacons, use the following pip command:
+```bash
 pip install predacons
+```
+
 ## Usage
+Here's a quick start guide to using Predacons in your Python projects:
+
 ```python
 from predacons import predacons
+
+# Initialize the library
 predacons.rollout()
-predacons.read_documents_from_directory()
-predacons.clean_text()
-predacons.train()
-predacons.generate_text()
+
+# Load documents from a directory
+predacons.read_documents_from_directory('your/directory/path')
+
+# Clean text data
+cleaned_text = predacons.clean_text("Your dirty text here")
+
+# Train a model with your data
+predacons.train(train_file_path="path/to/train/file",
+                model_name="your_model_name",
+                output_dir="path/to/output/dir",
+                overwrite_output_dir=True,
+                per_device_train_batch_size=4,
+                num_train_epochs=3,
+                save_steps=100)
+
+# Generate text using a trained model
+generated_text = predacons.generate_text(model_path="path/to/your/model",
+                                         sequence="Seed text for generation",
+                                         max_length=50)
 ```
+
+## Features
+Predacons provides a comprehensive set of features for working with transformer models, including:
+
+- **Data Loading**: Easily load data from directories or files.
+- **Text Cleaning**: Clean your text data with built-in functions.
+- **Model Training**: Train transformer models with custom data.
+- **Text Generation**: Generate text using trained models.
+
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-Please make sure to update tests as appropriate.
+Contributions to the Predacons library are welcome! If you have suggestions for improvements or new features, please open an issue first to discuss your ideas. For code contributions, please submit a pull request.
 
 ## License
 
