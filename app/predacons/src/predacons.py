@@ -222,7 +222,7 @@ def generate(*args, **kwargs):
             else:
                 return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
         except Exception as e:
-            print("Exception occurred while loading torch._dynamo.eval_frame.OptimizedModule :"+e)
+            print("Exception occurred while loading torch._dynamo.eval_frame.OptimizedModule")
             print("generate_output using default generation")
             return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
     else:
