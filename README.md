@@ -1,6 +1,8 @@
 # Predacons
 Predacons is a Python library based on transformers used for transfer learning. It offers a suite of tools for data processing, model training, and text generation, making it easier to apply advanced machine learning techniques to your projects.
 
+![PyPI](https://img.shields.io/pypi/v/predacons)   ![Downloads](https://img.shields.io/pypi/dm/predacons)   ![License](https://img.shields.io/pypi/l/predacons)   ![Python Version](https://img.shields.io/pypi/pyversions/predacons)
+
 ## Installation
 To install Predacons, use the following pip command:
 ```bash
