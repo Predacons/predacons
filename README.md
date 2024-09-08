@@ -37,6 +37,18 @@ predacons.train(train_file_path="path/to/train/file",
 generated_text = predacons.generate_text(model_path="path/to/your/model",
                                          sequence="Seed text for generation",
                                          max_length=50)
+
+# Generate chat using a trained model
+chat = [
+    {"role": "user", "content": "Hey, what ia a car?"}
+]
+chat_output = predacons.chat_generate(model = model,
+        sequence = chat,
+        max_length = 50,
+        tokenizer = tokenizers,
+        trust_remote_code = True,
+        apply_chat_template = True)
+   
 ```
 
 ## Features
@@ -46,6 +58,8 @@ Predacons provides a comprehensive set of features for working with transformer 
 - **Text Cleaning**: Clean your text data with built-in functions.
 - **Model Training**: Train transformer models with custom data.
 - **Text Generation**: Generate text using trained models.
+- **Chat Generation**: Generate chat responses using trained models.
+
 
 ## Contributing
 Contributions to the Predacons library are welcome! If you have suggestions for improvements or new features, please open an issue first to discuss your ideas. For code contributions, please submit a pull request.
