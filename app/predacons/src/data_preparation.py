@@ -1,6 +1,7 @@
 import openai
 import pandas as pd
 from .generate import Generate
+import random
 
 class DataPreparation:
     def __generate_data_source_openai(client,gpt_model,prompt, existing_data, temperature=.5):
