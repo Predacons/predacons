@@ -312,7 +312,7 @@ def generate_text(model_path, sequence, max_length,trust_remote_code = False,use
         return Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
 
 # Generate output
-def generate_output(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None):
+def generate_output(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None,temprature=0.1,apply_chat_template = False):
     """
     Generates output using the specified model.
 
@@ -330,12 +330,17 @@ def generate_output(model_path, sequence, max_length,trust_remote_code = False,u
     print("For repetitive generation first load model and then use generate. It will be faster.")
     print("will be deprecated soon, use generate instead")
     if use_fast_generation:
+        if apply_chat_template == True:
+                print("apply_chat_template not supported with fast generation yet")
         print("generate_output using fast generation")
         if draft_model_name == None:
             print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
             draft_model_name = model_path
         return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
     else:
+        if apply_chat_template == True:
+            print("chat generate using default generation")
+            return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code) 
         print("generate_output using default generation")
         return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
 
@@ -365,20 +370,27 @@ def generate(*args, **kwargs):
     Raises:
         ValueError: If the arguments are invalid.
     """
-    if 'model_path' in kwargs and 'sequence' in kwargs:
+    if 'model_path' in kwargs and ('sequence' or 'chat') in kwargs:
         model_path = kwargs['model_path']
         sequence = kwargs['sequence']
         max_length = kwargs.get('max_length', 50)
         trust_remote_code = kwargs.get('trust_remote_code', False)
         use_fast_generation = kwargs.get('use_fast_generation', False)
         draft_model_name = kwargs.get('draft_model_name', None)
+        apply_chat_template = kwargs.get('apply_chat_template',False)
+        temprature= kwargs.get('temprature',0.1)
         if use_fast_generation:
+            if apply_chat_template == True:
+                print("apply_chat_template not supported with fast generation yet")
             print("generate_output using fast generation")
             if draft_model_name == None:
                 print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
                 draft_model_name = model_path
             return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
         else:
+            if apply_chat_template == True:
+                print("chat generate using default generation")
+                return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code) 
             print("generate_output using default generation")
             return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
     
@@ -388,6 +400,10 @@ def generate(*args, **kwargs):
         sequence = kwargs['sequence']
         max_length = kwargs.get('max_length', 50)
         trust_remote_code = kwargs.get('trust_remote_code', False)
+        apply_chat_template = kwargs.get('apply_chat_template',False)
+        temprature= kwargs.get('temprature',0.1)
+        if apply_chat_template == True:
+            return Generate.generate_chat_output_from_model(model, tokenizer, sequence, max_length,temprature = temprature,trust_remote_code=trust_remote_code)
         try:
             if type(model) == torch._dynamo.eval_frame.OptimizedModule:
                 print("generate_output using fast generation")
@@ -416,6 +432,22 @@ def text_generate(*args, **kwargs):
     output, tokenizer = generate(*args, **kwargs)
     print(tokenizer.decode(output[0], skip_special_tokens=True))
     return tokenizer.decode(output[0], skip_special_tokens=True)
+
+def chat_generate(*args, **kwargs):
+    """
+    Generate chat  using the specified arguments.
+
+    Args:
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+
+    Returns:
+        str: The generated chat .
+
+    """
+    input,output, tokenizer = generate(*args, **kwargs)
+    print(tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True))
+    return tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True)
 
 # Data preparation
 def generate_text_data_source_openai(client,gpt_model,prompt,number_of_examples,temperature =0.5):
