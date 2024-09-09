@@ -457,6 +457,7 @@ def chat_generate(*args, **kwargs):
 
     """
     kwargs['apply_chat_template'] = True
+
     input,output, tokenizer = generate(*args, **kwargs)
     print(tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True))
     return tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True)
