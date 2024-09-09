@@ -46,8 +46,7 @@ chat_output = predacons.chat_generate(model = model,
         sequence = chat,
         max_length = 50,
         tokenizer = tokenizers,
-        trust_remote_code = True,
-        apply_chat_template = True)
+        trust_remote_code = True)
    
 ```
 
