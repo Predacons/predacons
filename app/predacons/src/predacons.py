@@ -295,7 +295,7 @@ def trainer(*args, **kwargs):
     return TrainPredacons.trainer(*args, **kwargs)
 
 # Generate text
-def generate_text(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None):
+def generate_text(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None,gguf_file=None):
     """
     Generate text using the specified model.
 
@@ -317,13 +317,13 @@ def generate_text(model_path, sequence, max_length,trust_remote_code = False,use
         if draft_model_name == None:
             print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
             draft_model_name = model_path
-        return GPTFast.generate_text_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
+        return GPTFast.generate_text_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file=gguf_file)
     else:
         print("generate_text using default generation")
-        return Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
+        return Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file=gguf_file) 
 
 # Generate output
-def generate_output(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None,temprature=0.1,apply_chat_template = False):
+def generate_output(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None,temprature=0.1,apply_chat_template = False,gguf_file=None):
     """
     Generates output using the specified model.
 
@@ -347,13 +347,13 @@ def generate_output(model_path, sequence, max_length,trust_remote_code = False,u
         if draft_model_name == None:
             print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
             draft_model_name = model_path
-        return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
+        return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file=gguf_file)
     else:
         if apply_chat_template == True:
             print("chat generate using default generation")
-            return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code) 
+            return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code,gguf_file=gguf_file) 
         print("generate_output using default generation")
-        return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
+        return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file=gguf_file) 
 
 # generate new
 
@@ -390,6 +390,7 @@ def generate(*args, **kwargs):
         draft_model_name = kwargs.get('draft_model_name', None)
         apply_chat_template = kwargs.get('apply_chat_template',False)
         temprature= kwargs.get('temprature',0.1)
+        gguf_file = kwargs.get('gguf_file',None)
         if use_fast_generation:
             if apply_chat_template == True:
                 print("apply_chat_template not supported with fast generation yet")
@@ -397,13 +398,13 @@ def generate(*args, **kwargs):
             if draft_model_name == None:
                 print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
                 draft_model_name = model_path
-            return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code)
+            return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file)
         else:
             if apply_chat_template == True:
                 print("chat generate using default generation")
-                return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code) 
+                return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code, gguf_file = gguf_file) 
             print("generate_output using default generation")
-            return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code) 
+            return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file) 
     
     elif 'model' in kwargs and 'tokenizer' in kwargs and 'sequence' in kwargs:
         model = kwargs['model']
@@ -496,7 +497,7 @@ def generate_text_data_source_llm(model_path, sequence, max_length,number_of_exa
     return DataPreparation.generate_text_data_source_llm(model_path, sequence, max_length,number_of_examples,trust_remote_code=trust_remote_code)
 
 # Get model and tokenizer
-def load_model(model_path,trust_remote_code=False,use_fast_generation=False, draft_model_name=None):
+def load_model(model_path,trust_remote_code=False,use_fast_generation=False, draft_model_name=None,gguf_file=None):
     """
     Load a model from the specified model_path.
 
@@ -517,12 +518,12 @@ def load_model(model_path,trust_remote_code=False,use_fast_generation=False, dra
         if draft_model_name == None:
             print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
             draft_model_name = model_path
-        return GPTFast.load_model(model_path, draft_model_name,trust_remote_code=trust_remote_code)
+        return GPTFast.load_model(model_path, draft_model_name,trust_remote_code=trust_remote_code,gguf_file=gguf_file)
     else:
         print("load_model using default generation")
-        return Generate.load_model(model_path,trust_remote_code=trust_remote_code)
+        return Generate.load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file)
 
-def load_tokenizer(tokenizer_path):
+def load_tokenizer(tokenizer_path,gguf_file=None):
     """
     Loads a tokenizer from the specified path.
 
@@ -532,6 +533,6 @@ def load_tokenizer(tokenizer_path):
     Returns:
         Tokenizer: The loaded tokenizer object.
     """
-    return Generate.load_tokenizer(tokenizer_path)
+    return Generate.load_tokenizer(tokenizer_path,gguf_file=gguf_file)
  
 

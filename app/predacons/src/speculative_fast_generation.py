@@ -72,7 +72,7 @@ class GPTFast:
     def gpt_fast(model_name:str ,trust_remote_code=False, **spec_dec_kwargs):
         return GPTFast.__gpt_fast(model_name, trust_remote_code=trust_remote_code, **spec_dec_kwargs)
     
-    def generate_output_fast(model_name, draft_model_name, sequence, max_length, trust_remote_code=False):
+    def generate_output_fast(model_name, draft_model_name, sequence, max_length, trust_remote_code=False,gguf_file = None):
         return GPTFast.__generate_output_fast(model_name, draft_model_name, sequence, max_length, trust_remote_code=trust_remote_code)
     
     def generate_text_fast(model_name, draft_model_name, sequence, max_length, trust_remote_code=False):
@@ -80,7 +80,7 @@ class GPTFast:
         print(tokenizer.decode(output[0], skip_special_tokens=True))
         return tokenizer.decode(output[0], skip_special_tokens=True)
     
-    def load_model(model_path,draft_model_name,trust_remote_code=False):
+    def load_model(model_path,draft_model_name,trust_remote_code=False,gguf_file=None):
         return GPTFast.__gpt_fast(model_path, trust_remote_code=trust_remote_code, draft_model_name=draft_model_name, sample_function=GPTFast.__argmax)
     
     def generate_output_from_model(model, tokenizer, sequence, max_length):
