@@ -323,7 +323,7 @@ def generate_text(model_path, sequence, max_length,trust_remote_code = False,use
         return Generate.generate_text(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file=gguf_file) 
 
 # Generate output
-def generate_output(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None,temprature=0.1,apply_chat_template = False,gguf_file=None):
+def generate_output(model_path, sequence, max_length,trust_remote_code = False,use_fast_generation=False, draft_model_name=None,temprature=0.1,apply_chat_template = False,gguf_file=None,auto_quantize=None):
     """
     Generates output using the specified model.
 
@@ -334,6 +334,10 @@ def generate_output(model_path, sequence, max_length,trust_remote_code = False,u
         trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
         use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
+        temprature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
+        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
+        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
+        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
 
     Returns:
         str: The generated output.
@@ -351,9 +355,9 @@ def generate_output(model_path, sequence, max_length,trust_remote_code = False,u
     else:
         if apply_chat_template == True:
             print("chat generate using default generation")
-            return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code,gguf_file=gguf_file) 
+            return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize) 
         print("generate_output using default generation")
-        return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file=gguf_file) 
+        return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize) 
 
 # generate new
 
@@ -374,6 +378,11 @@ def generate(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
+        temprature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
+        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
+        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
+
 
     Returns:
         str: The generated output.
@@ -391,9 +400,12 @@ def generate(*args, **kwargs):
         apply_chat_template = kwargs.get('apply_chat_template',False)
         temprature= kwargs.get('temprature',0.1)
         gguf_file = kwargs.get('gguf_file',None)
+        auto_quantize = kwargs.get('auto_quantize',None)
         if use_fast_generation:
             if apply_chat_template == True:
                 print("apply_chat_template not supported with fast generation yet")
+            if auto_quantize != None:
+                print("auto quantize is not supported with fast generation yet")
             print("generate_output using fast generation")
             if draft_model_name == None:
                 print("Draft model is required for fast generation. Using base model as draft model, but it may increase memory utilization. try to use draft model name for better performance.")
@@ -402,9 +414,9 @@ def generate(*args, **kwargs):
         else:
             if apply_chat_template == True:
                 print("chat generate using default generation")
-                return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code, gguf_file = gguf_file) 
+                return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code, gguf_file = gguf_file,auto_quantize=auto_quantize) 
             print("generate_output using default generation")
-            return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file) 
+            return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file,auto_quantize=auto_quantize) 
     
     elif 'model' in kwargs and 'tokenizer' in kwargs and 'sequence' in kwargs:
         model = kwargs['model']
@@ -497,7 +509,7 @@ def generate_text_data_source_llm(model_path, sequence, max_length,number_of_exa
     return DataPreparation.generate_text_data_source_llm(model_path, sequence, max_length,number_of_examples,trust_remote_code=trust_remote_code)
 
 # Get model and tokenizer
-def load_model(model_path,trust_remote_code=False,use_fast_generation=False, draft_model_name=None,gguf_file=None):
+def load_model(model_path,trust_remote_code=False,use_fast_generation=False, draft_model_name=None,gguf_file=None,auto_quantize=None):
     """
     Load a model from the specified model_path.
 
@@ -506,6 +518,8 @@ def load_model(model_path,trust_remote_code=False,use_fast_generation=False, dra
         trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
         use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
+        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
+        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
 
     Returns:
         Model: The loaded model.
@@ -521,7 +535,7 @@ def load_model(model_path,trust_remote_code=False,use_fast_generation=False, dra
         return GPTFast.load_model(model_path, draft_model_name,trust_remote_code=trust_remote_code,gguf_file=gguf_file)
     else:
         print("load_model using default generation")
-        return Generate.load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file)
+        return Generate.load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
 
 def load_tokenizer(tokenizer_path,gguf_file=None):
     """
