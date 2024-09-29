@@ -8,7 +8,7 @@ import pandas as pd
 
 def rollout():
     print("Predacons rollout !!!")
-    print("Predacons Version: v0.0.110")
+    print("Predacons Version: v0.0.125")
     print("\nread_documents_from_directory -- Load data from directory")
     print("    directory -- Directory path")
     print("\nread_multiple_files -- Load data from multiple files")
@@ -470,9 +470,10 @@ def chat_generate(*args, **kwargs):
 
     """
     kwargs['apply_chat_template'] = True
-
+    dont_print_output = kwargs.get('dont_print_output', False)
     input,output, tokenizer = generate(*args, **kwargs)
-    print(tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True))
+    if not dont_print_output:
+        print(tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True))
     return tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True)
 
 # Data preparation
