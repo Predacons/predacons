@@ -47,7 +47,13 @@ chat_output = predacons.chat_generate(model = model,
         max_length = 50,
         tokenizer = tokenizers,
         trust_remote_code = True)
-   
+
+# Generate embeddings for sentences
+from predacons.src.embeddings import PredaconsEmbedding
+
+# this embedding_model object can be used directly in every method langchain   
+embedding_model = PredaconsEmbedding(model_name="sentence-transformers/paraphrase-MiniLM-L6-v2")
+sentence_embeddings = embedding_model.get_embedding(["Your sentence here", "Another sentence here"])
 ```
 
 ## Features
@@ -58,6 +64,8 @@ Predacons provides a comprehensive set of features for working with transformer 
 - **Model Training**: Train transformer models with custom data.
 - **Text Generation**: Generate text using trained models.
 - **Chat Generation**: Generate chat responses using trained models.
+- **Embeddings**: Generate embeddings for sentences using pre-trained transformer models. and is fully compatible with langchain methods
+
 
 
 ## Contributing
