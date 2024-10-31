@@ -66,7 +66,7 @@ class Generate:
         model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
         tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
         if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            print("Warning: Chat template not found in tokenizer. Applying default chat template")
             tokenizer.chat_template = Generate.default_chat_template
         inputs = tokenizer(sequence, return_tensors="pt", add_special_tokens=False)
         inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
@@ -83,7 +83,7 @@ class Generate:
         model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
         tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
         if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            print("Warning: Chat template not found in tokenizer. Applying default chat template")
             tokenizer.chat_template = Generate.default_chat_template
         formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
         inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
@@ -98,7 +98,7 @@ class Generate:
         model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
         tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
         if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            print("Warning: Chat template not found in tokenizer. Applying default chat template")
             tokenizer.chat_template = Generate.default_chat_template
         formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
         inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
@@ -132,7 +132,7 @@ class Generate:
     
     def __generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temprature=0.1,trust_remote_code=False):
         if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            print("Warning: Chat template not found in tokenizer. Applying default chat template")
             tokenizer.chat_template = Generate.default_chat_template
         inputs = tokenizer(sequence, return_tensors="pt", add_special_tokens=False)
         inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
@@ -148,7 +148,7 @@ class Generate:
     def __generate_chat_output_from_model(model, tokenizer, sequence, max_length,temprature=0.1,trust_remote_code=False):
         # ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
         if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            print("Warning: Chat template not found in tokenizer. Applying default chat template")
             tokenizer.chat_template = Generate.default_chat_template
         formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
         inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
@@ -162,7 +162,7 @@ class Generate:
     def __generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temprature=0.1,trust_remote_code=False):
         # ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
         if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            print("Warning: Chat template not found in tokenizer. Applying default chat template")
             tokenizer.chat_template = Generate.default_chat_template
         formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
         inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
