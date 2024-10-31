@@ -382,7 +382,7 @@ def generate(*args, **kwargs):
         temprature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
         auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-
+        stream (bool, optional): Whether to stream the output. Defaults to False. if True, thread and streamer will be returned.
 
     Returns:
         str: The generated output.
@@ -401,6 +401,7 @@ def generate(*args, **kwargs):
         temprature= kwargs.get('temprature',0.1)
         gguf_file = kwargs.get('gguf_file',None)
         auto_quantize = kwargs.get('auto_quantize',None)
+        stream = kwargs.get('stream',False)
         if use_fast_generation:
             if apply_chat_template == True:
                 print("apply_chat_template not supported with fast generation yet")
@@ -413,9 +414,12 @@ def generate(*args, **kwargs):
             return GPTFast.generate_output_fast(model_path, draft_model_name, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file)
         else:
             if apply_chat_template == True:
-                print("chat generate using default generation")
+                if stream:
+                    return Generate.generate_chat_output_stream(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code, gguf_file = gguf_file,auto_quantize=auto_quantize)
                 return Generate.generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code = trust_remote_code, gguf_file = gguf_file,auto_quantize=auto_quantize) 
             print("generate_output using default generation")
+            if stream:
+                return Generate.generate_output_stream(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file,auto_quantize=auto_quantize)
             return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file,auto_quantize=auto_quantize) 
     
     elif 'model' in kwargs and 'tokenizer' in kwargs and 'sequence' in kwargs:
@@ -426,17 +430,24 @@ def generate(*args, **kwargs):
         trust_remote_code = kwargs.get('trust_remote_code', False)
         apply_chat_template = kwargs.get('apply_chat_template',False)
         temprature= kwargs.get('temprature',0.1)
+        stream = kwargs.get('stream',False)
         if apply_chat_template == True:
+            if stream:
+                return Generate.generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temprature = temprature,trust_remote_code=trust_remote_code)
             return Generate.generate_chat_output_from_model(model, tokenizer, sequence, max_length,temprature = temprature,trust_remote_code=trust_remote_code)
         try:
             if type(model) == torch._dynamo.eval_frame.OptimizedModule:
                 print("generate_output using fast generation")
                 return GPTFast.generate_output_from_model(model, tokenizer, sequence, max_length)
             else:
+                if stream:
+                    return Generate.generate_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
                 return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
         except Exception as e:
             print("Exception occurred while loading torch._dynamo.eval_frame.OptimizedModule")
             print("generate_output using default generation")
+            if stream:
+                return Generate.generate_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
             return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
     else:
         raise ValueError("Invalid arguments")
@@ -449,13 +460,71 @@ def text_generate(*args, **kwargs):
         *args: Variable length argument list.
         **kwargs: Arbitrary keyword arguments.
 
+    Keyword Args:
+        model_path (str): The path to the model file.
+        sequence (str): The input sequence to generate output from.
+        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
+        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
+        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
+        draft_model_name (str, optional): The name of the draft model. Defaults to None.
+        model (object): The model object.
+        tokenizer (object): The tokenizer object.
+        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
+        temprature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
+        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
+        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
+        stream (bool, optional): Whether to stream the output. Defaults to False. if True, thread and streamer will be returned.
     Returns:
         str: The generated text.
 
     """
+    stream = kwargs.get('stream',False)
+    if stream:
+        thread, streamer = generate(*args, **kwargs)
+        return thread, streamer
     output, tokenizer = generate(*args, **kwargs)
     print(tokenizer.decode(output[0], skip_special_tokens=True))
     return tokenizer.decode(output[0], skip_special_tokens=True)
+
+def text_stream(*args, **kwargs):
+    """
+    stream text using the specified arguments.
+
+    Args:
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+
+    Keyword Args:
+        model_path (str): The path to the model file.
+        sequence (str): The input sequence to generate output from.
+        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
+        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
+        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
+        draft_model_name (str, optional): The name of the draft model. Defaults to None.
+        model (object): The model object.
+        tokenizer (object): The tokenizer object.
+        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
+        temprature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
+        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
+        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
+        return_streamer (bool, optional): Whether to return the streamer instead of printing the text. Defaults to False.
+    Returns:
+        str: The generated text.
+
+    """
+    kwargs['stream'] = True
+    
+    thread, streamer = generate(*args, **kwargs)
+    return_streamer = kwargs.get('return_streamer',False)
+    if return_streamer:
+        return thread, streamer
+    thread.start()
+    out = ""
+    for new_text in streamer:
+        out = out + new_text
+        print(new_text,end=" ")
+    return out
+    
 
 def chat_generate(*args, **kwargs):
     """
@@ -465,17 +534,75 @@ def chat_generate(*args, **kwargs):
         *args: Variable length argument list.
         **kwargs: Arbitrary keyword arguments.
 
+    Keyword Args:
+        model_path (str): The path to the model file.
+        sequence (str): The input sequence to generate output from.
+        dont_print_output (bool, optional): Whether to print the output. Defaults to False.
+        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
+        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
+        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
+        draft_model_name (str, optional): The name of the draft model. Defaults to None.
+        model (object): The model object.
+        tokenizer (object): The tokenizer object.
+        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
+        temprature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
+        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
+        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
+    
     Returns:
         str: The generated chat .
 
     """
     kwargs['apply_chat_template'] = True
+    kwargs['stream'] = True
+    stream = kwargs.get('stream',False)
+    if stream:
+        thread, streamer = generate(*args, **kwargs)
+        return thread, streamer
     dont_print_output = kwargs.get('dont_print_output', False)
     input,output, tokenizer = generate(*args, **kwargs)
     if not dont_print_output:
         print(tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True))
     return tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True)
+def chat_stream(*args, **kwargs):
+    """
+    stream text using the specified arguments.
 
+    Args:
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+
+    Keyword Args:
+        model_path (str): The path to the model file.
+        sequence (str): The input sequence to generate output from.
+        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
+        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
+        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
+        draft_model_name (str, optional): The name of the draft model. Defaults to None.
+        model (object): The model object.
+        tokenizer (object): The tokenizer object.
+        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
+        temprature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
+        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
+        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
+        return_streamer (bool, optional): Whether to return the streamer instead of printing the text. Defaults to False.
+    Returns:
+        str: The generated text.
+
+    """
+    kwargs['stream'] = True
+    
+    thread, streamer = generate(*args, **kwargs)
+    return_streamer = kwargs.get('return_streamer',False)
+    if return_streamer:
+        return thread, streamer
+    
+    thread.start()
+    out = ""
+    for new_text in streamer:
+        out = out + new_text
+        print(new_text,end=" ")
+    return out
 # Data preparation
 def generate_text_data_source_openai(client,gpt_model,prompt,number_of_examples,temperature =0.5):
     """
