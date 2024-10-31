@@ -1,4 +1,4 @@
-from transformers import AutoModelForPreTraining, AutoTokenizer,AutoModelForCausalLM,BitsAndBytesConfig,TextIteratorStreamer
+from transformers import AutoModelForPreTraining, AutoTokenizer,AutoModelForCausalLM,BitsAndBytesConfig,TextIteratorStreamer,GenerationConfig
 import torch
 from threading import Thread
 
@@ -62,6 +62,23 @@ class Generate:
         )
         return final_outputs,tokenizer
     
+    def __generate_output_stream(model_path, sequence, max_length,temprature = 0.1,trust_remote_code=False,gguf_file=None,auto_quantize = None):
+        model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
+        tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
+        if tokenizer.chat_template is None:
+            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            tokenizer.chat_template = Generate.default_chat_template
+        inputs = tokenizer(sequence, return_tensors="pt", add_special_tokens=False)
+        inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
+        streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+        generation_config = GenerationConfig(
+            temperature=temprature,
+            do_sample=True,
+        )
+        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+        thread = Thread(target=model.generate, kwargs=generation_kwargs)
+        return thread, streamer
+    
     def __generate_chat_output(model_path, sequence, max_length,temprature = 0.1,trust_remote_code=False,gguf_file=None,auto_quantize = None):
         model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
         tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
@@ -76,6 +93,24 @@ class Generate:
             max_new_tokens=max_length, 
             temperature=temprature)
         return inputs,final_outputs,tokenizer
+    
+    def __generate_chat_output_stream(model_path, sequence, max_length,temprature = 0.1,trust_remote_code=False,gguf_file=None,auto_quantize = None):
+        model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
+        tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
+        if tokenizer.chat_template is None:
+            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            tokenizer.chat_template = Generate.default_chat_template
+        formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
+        inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
+        inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
+        streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+        generation_config = GenerationConfig(
+            temperature=temprature,
+            do_sample=True,
+        )
+        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+        thread = Thread(target=model.generate, kwargs=generation_kwargs)
+        return thread, streamer
     
     def __generate_text(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         final_outputs,tokenizer = Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
@@ -95,6 +130,21 @@ class Generate:
         )
         return final_outputs,tokenizer
     
+    def __generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temprature=0.1,trust_remote_code=False):
+        if tokenizer.chat_template is None:
+            print("Warning: Chat template not found in tokenizer. Appling default chat template")
+            tokenizer.chat_template = Generate.default_chat_template
+        inputs = tokenizer(sequence, return_tensors="pt", add_special_tokens=False)
+        inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
+        streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+        generation_config = GenerationConfig(
+            temperature=temprature,
+            do_sample=True,
+        )
+        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+        thread = Thread(target=model.generate, kwargs=generation_kwargs)
+        return thread, streamer
+    
     def __generate_chat_output_from_model(model, tokenizer, sequence, max_length,temprature=0.1,trust_remote_code=False):
         # ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
         if tokenizer.chat_template is None:
@@ -109,7 +159,7 @@ class Generate:
             temperature=temprature)
         return inputs,final_outputs,tokenizer
     
-    def __generate_chat_output_from_model_streamer(model, tokenizer, sequence, max_length,temprature=0.1,trust_remote_code=False):
+    def __generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temprature=0.1,trust_remote_code=False):
         # ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
         if tokenizer.chat_template is None:
             print("Warning: Chat template not found in tokenizer. Appling default chat template")
@@ -118,12 +168,19 @@ class Generate:
         inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
         inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
         streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
-        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, temperature=temprature)
+        generation_config = GenerationConfig(
+            temperature=temprature,
+            do_sample=True,
+        )
+        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
         thread = Thread(target=model.generate, kwargs=generation_kwargs)
         return thread, streamer
 
     def generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         return Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
+    
+    def generate_output_stream(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
+        return Generate.__generate_output_stream(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
     
     def generate_text(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None):
         return Generate.__generate_text(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file)
@@ -137,8 +194,14 @@ class Generate:
     def generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=False):
         return Generate.__generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
     
+    def generate_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=False):
+        return Generate.__generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+    
     def generate_chat_output(model_path, sequence, max_length,temprature = 0.1,trust_remote_code=False,gguf_file = None,auto_quantize=None):
         return Generate.__generate_chat_output(model_path, sequence, max_length,temprature = temprature,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
+    
+    def generate_chat_output_stream(model_path, sequence, max_length,temprature = 0.1,trust_remote_code=False,gguf_file = None,auto_quantize=None):
+        return Generate.__generate_chat_output_stream(model_path, sequence, max_length,temprature = temprature,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
     
     def generate_chat_output_from_model(model, tokenizer, sequence, max_length,temprature=0.1,trust_remote_code=False):
         return Generate.__generate_chat_output_from_model(model, tokenizer, sequence, max_length,temprature=temprature,trust_remote_code=trust_remote_code)

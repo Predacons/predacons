@@ -8,7 +8,7 @@ import pandas as pd
 
 def rollout():
     print("Predacons rollout !!!")
-    print("Predacons Version: v0.0.126")
+    print("Predacons Version: v0.0.127")
     print("\nread_documents_from_directory -- Load data from directory")
     print("    directory -- Directory path")
     print("\nread_multiple_files -- Load data from multiple files")
@@ -86,6 +86,11 @@ def rollout():
     print("    draft_model_name -- Draft model name / path (default None)")
     print("    model -- give a preloaded Model (default None)")
     print("    tokenizer -- give a preloaded Tokenizer (default None)")
+    print("\ntext_stream -- stream text and print")
+    print("    model_path -- Model path")
+    print("    sequence -- Sequence")
+    print("    max_length -- Max length")
+    print("    trust_remote_code -- Trust remote code (default False)")
     print("\nchat_generate -- Generate chat and print")
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
@@ -96,6 +101,14 @@ def rollout():
     print("    model -- give a preloaded Model (default None)")
     print("    tokenizer -- give a preloaded Tokenizer (default None)")
     print("    apply_chat_template -- use chat template (defauly False)")
+    print("    dont_print_output -- Dont print output (default False)")
+    print("    gguf_file -- GGUF file path (default None)")
+    print("    auto_quantize -- Automatically apply quantization (default None)")
+    print("\nchat_stream -- Stream chat and print")
+    print("    model_path -- Model path")
+    print("    sequence -- Sequence")
+    print("    max_length -- Max length")
+    print("    trust_remote_code -- Trust remote code (default False)")
     print("\nload_model -- Load model")
     print("    model_path -- Model path")
     print("    trust_remote_code -- Trust remote code (default False)")
@@ -476,6 +489,9 @@ def text_generate(*args, **kwargs):
         stream (bool, optional): Whether to stream the output. Defaults to False. if True, thread and streamer will be returned.
     Returns:
         str: The generated text.
+        or
+        thread: The thread object.
+        streamer: The streamer object.
 
     """
     stream = kwargs.get('stream',False)
@@ -510,6 +526,9 @@ def text_stream(*args, **kwargs):
         return_streamer (bool, optional): Whether to return the streamer instead of printing the text. Defaults to False.
     Returns:
         str: The generated text.
+        or
+        thread: The thread object.
+        streamer: The streamer object.
 
     """
     kwargs['stream'] = True
@@ -551,6 +570,9 @@ def chat_generate(*args, **kwargs):
     
     Returns:
         str: The generated chat .
+        or
+        thread: The thread object.
+        streamer: The streamer object.
 
     """
     kwargs['apply_chat_template'] = True
@@ -588,6 +610,9 @@ def chat_stream(*args, **kwargs):
         return_streamer (bool, optional): Whether to return the streamer instead of printing the text. Defaults to False.
     Returns:
         str: The generated text.
+        or
+        thread: The thread object.
+        streamer: The streamer object.
 
     """
     kwargs['stream'] = True
