@@ -501,7 +501,17 @@ def text_generate(*args, **kwargs):
     output, tokenizer = generate(*args, **kwargs)
     print(tokenizer.decode(output[0], skip_special_tokens=True))
     return tokenizer.decode(output[0], skip_special_tokens=True)
-
+def _handle_stream(thread, streamer):
+    """Internal utility to handle streaming output."""
+    thread.start()
+    try:
+        out = ""
+        for new_text in streamer:
+            out = out + new_text
+            print(new_text, end=" ")
+        return out
+    finally:
+        thread.join()
 def text_stream(*args, **kwargs):
     """
     stream text using the specified arguments.
@@ -537,12 +547,7 @@ def text_stream(*args, **kwargs):
     return_streamer = kwargs.get('return_streamer',False)
     if return_streamer:
         return thread, streamer
-    thread.start()
-    out = ""
-    for new_text in streamer:
-        out = out + new_text
-        print(new_text,end=" ")
-    return out
+    return _handle_stream(thread, streamer)
     
 
 def chat_generate(*args, **kwargs):
@@ -622,12 +627,7 @@ def chat_stream(*args, **kwargs):
     if return_streamer:
         return thread, streamer
     
-    thread.start()
-    out = ""
-    for new_text in streamer:
-        out = out + new_text
-        print(new_text,end=" ")
-    return out
+    return _handle_stream(thread, streamer)
 # Data preparation
 def generate_text_data_source_openai(client,gpt_model,prompt,number_of_examples,temperature =0.5):
     """
