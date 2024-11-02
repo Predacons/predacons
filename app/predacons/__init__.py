@@ -17,5 +17,7 @@ from .src.predacons import (
     load_tokenizer,
     generate,
     text_generate,
-    chat_generate
+    chat_generate,
+    text_stream,
+    chat_stream
 )
