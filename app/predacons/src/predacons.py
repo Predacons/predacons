@@ -581,7 +581,6 @@ def chat_generate(*args, **kwargs):
 
     """
     kwargs['apply_chat_template'] = True
-    kwargs['stream'] = True
     stream = kwargs.get('stream',False)
     if stream:
         thread, streamer = generate(*args, **kwargs)
