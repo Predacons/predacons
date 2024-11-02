@@ -37,10 +37,29 @@ predacons.train(train_file_path="path/to/train/file",
 generated_text = predacons.generate_text(model_path="path/to/your/model",
                                          sequence="Seed text for generation",
                                          max_length=50)
+# 
+
+# Stream text generation using a trained model
+for text in predacons.text_stream(model_path="path/to/your/model",
+                                  sequence="Seed text for generation",
+                                  max_length=50):
+    print(text)
+
+# Get text streamer
+thread,streamer = predacons.text_generate(model=model, tokenizer = tokenizer, sequence = seq, max_length=100, temperature=0.1,stream=True)
+
+thread.start()
+try:
+    out = ""
+    for new_text in streamer:
+        out = out + new_text
+        print(new_text, end=" ")
+finally:
+    thread.join()
 
 # Generate chat using a trained model
 chat = [
-    {"role": "user", "content": "Hey, what ia a car?"}
+    {"role": "user", "content": "Hey, what is a car?"}
 ]
 chat_output = predacons.chat_generate(model = model,
         sequence = chat,
@@ -48,6 +67,25 @@ chat_output = predacons.chat_generate(model = model,
         tokenizer = tokenizers,
         trust_remote_code = True)
 
+# Stream chat generation using a trained model
+for chat in predacons.chat_stream(model = model,
+                                  sequence = chat,
+                                  max_length = 50,
+                                  tokenizer = tokenizers,
+                                  trust_remote_code = True):
+    print(chat)
+
+# get chat streamer
+thread,streamer = predacons.chat_generate(model=model, tokenizer = tokenizer, sequence = chat, max_length=500, temperature=0.1,stream=True)
+
+thread.start()
+try:
+    out = ""
+    for new_text in streamer:
+        out = out + new_text
+        print(new_text, end="")
+finally:
+    thread.join()
 # Generate embeddings for sentences
 from predacons.src.embeddings import PredaconsEmbedding
 
@@ -63,10 +101,10 @@ Predacons provides a comprehensive set of features for working with transformer 
 - **Text Cleaning**: Clean your text data with built-in functions.
 - **Model Training**: Train transformer models with custom data.
 - **Text Generation**: Generate text using trained models.
+- **Text Streaming**: Stream text generation using trained models.
 - **Chat Generation**: Generate chat responses using trained models.
+- **Chat Streaming**: Stream chat generation using trained models.
 - **Embeddings**: Generate embeddings for sentences using pre-trained transformer models. and is fully compatible with langchain methods
-
-
 
 ## Contributing
 Contributions to the Predacons library are welcome! If you have suggestions for improvements or new features, please open an issue first to discuss your ideas. For code contributions, please submit a pull request.
