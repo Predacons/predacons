@@ -63,54 +63,63 @@ class Generate:
         return final_outputs,tokenizer
     
     def __generate_output_stream(model_path, sequence, max_length,temperature = 0.1,trust_remote_code=False,gguf_file=None,auto_quantize = None):
-        model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
-        tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
-        if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Applying default chat template")
-            tokenizer.chat_template = Generate.default_chat_template
-        inputs = tokenizer(sequence, return_tensors="pt", add_special_tokens=False)
-        inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
-        streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
-        generation_config = GenerationConfig(
-            temperature=temperature,
-            do_sample=True,
-        )
-        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
-        thread = Thread(target=model.generate, kwargs=generation_kwargs)
-        return thread, streamer
+        try:
+            model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
+            tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
+            if tokenizer.chat_template is None:
+                print("Warning: Chat template not found in tokenizer. Applying default chat template")
+                tokenizer.chat_template = Generate.default_chat_template
+            inputs = tokenizer(sequence, return_tensors="pt", add_special_tokens=False)
+            inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
+            streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+            generation_config = GenerationConfig(
+                temperature=temperature,
+                do_sample=True,
+            )
+            generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+            thread = Thread(target=model.generate, kwargs=generation_kwargs)
+            return thread, streamer
+        except Exception as e:
+            raise RuntimeError(f"Failed to setup streaming generation: {str(e)}")
     
     def __generate_chat_output(model_path, sequence, max_length,temperature = 0.1,trust_remote_code=False,gguf_file=None,auto_quantize = None):
-        model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
-        tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
-        if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Applying default chat template")
-            tokenizer.chat_template = Generate.default_chat_template
-        formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
-        inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
-        final_outputs = model.generate(
-            **inputs, 
-            max_new_tokens=max_length, 
-            temperature=temperature)
-        return inputs,final_outputs,tokenizer
+        try:
+            model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
+            tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
+            if tokenizer.chat_template is None:
+                print("Warning: Chat template not found in tokenizer. Applying default chat template")
+                tokenizer.chat_template = Generate.default_chat_template
+            formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
+            inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
+            inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
+            final_outputs = model.generate(
+                **inputs, 
+                max_new_tokens=max_length, 
+                temperature=temperature)
+            return inputs,final_outputs,tokenizer
+        except Exception as e:
+            raise RuntimeError(f"Failed to generate chat output: {str(e)}")
     
     def __generate_chat_output_stream(model_path, sequence, max_length,temperature = 0.1,trust_remote_code=False,gguf_file=None,auto_quantize = None):
-        model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
-        tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
-        if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Applying default chat template")
-            tokenizer.chat_template = Generate.default_chat_template
-        formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
-        inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
-        streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
-        generation_config = GenerationConfig(
-            temperature=temperature,
-            do_sample=True,
-        )
-        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
-        thread = Thread(target=model.generate, kwargs=generation_kwargs)
-        return thread, streamer
+        try:
+            model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
+            tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
+            if tokenizer.chat_template is None:
+                print("Warning: Chat template not found in tokenizer. Applying default chat template")
+                tokenizer.chat_template = Generate.default_chat_template
+            formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
+            inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
+            inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
+            streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+            generation_config = GenerationConfig(
+                temperature=temperature,
+                do_sample=True,
+            )
+            generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+            thread = Thread(target=model.generate, kwargs=generation_kwargs)
+            return thread, streamer
+        except Exception as e:
+            raise RuntimeError(f"Failed to setup streaming generation: {str(e)}")
     
     def __generate_text(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         final_outputs,tokenizer = Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
@@ -131,19 +140,22 @@ class Generate:
         return final_outputs,tokenizer
     
     def __generate_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=0.1,trust_remote_code=False):
-        if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Applying default chat template")
-            tokenizer.chat_template = Generate.default_chat_template
-        inputs = tokenizer(sequence, return_tensors="pt", add_special_tokens=False)
-        inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
-        streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
-        generation_config = GenerationConfig(
-            temperature=temperature,
-            do_sample=True,
-        )
-        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
-        thread = Thread(target=model.generate, kwargs=generation_kwargs)
-        return thread, streamer
+        try:
+            if tokenizer.chat_template is None:
+                print("Warning: Chat template not found in tokenizer. Applying default chat template")
+                tokenizer.chat_template = Generate.default_chat_template
+            inputs = tokenizer(sequence, return_tensors="pt", add_special_tokens=False)
+            inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
+            streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+            generation_config = GenerationConfig(
+                temperature=temperature,
+                do_sample=True,
+            )
+            generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+            thread = Thread(target=model.generate, kwargs=generation_kwargs)
+            return thread, streamer
+        except Exception as e:
+            raise RuntimeError(f"Failed to setup streaming generation: {str(e)}")
     
     def __generate_chat_output_from_model(model, tokenizer, sequence, max_length,temperature=0.1,trust_remote_code=False):
         # ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
@@ -160,21 +172,24 @@ class Generate:
         return inputs,final_outputs,tokenizer
     
     def __generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=0.1,trust_remote_code=False):
-        # ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
-        if tokenizer.chat_template is None:
-            print("Warning: Chat template not found in tokenizer. Applying default chat template")
-            tokenizer.chat_template = Generate.default_chat_template
-        formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
-        inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
-        streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
-        generation_config = GenerationConfig(
-            temperature=temperature,
-            do_sample=True,
-        )
-        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
-        thread = Thread(target=model.generate, kwargs=generation_kwargs)
-        return thread, streamer
+        try:
+            # ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
+            if tokenizer.chat_template is None:
+                print("Warning: Chat template not found in tokenizer. Applying default chat template")
+                tokenizer.chat_template = Generate.default_chat_template
+            formatted_chat = tokenizer.apply_chat_template(sequence, tokenize=False, add_generation_prompt=True)
+            inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
+            inputs = {key: tensor.to(model.device) for key, tensor in inputs.items()}
+            streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+            generation_config = GenerationConfig(
+                temperature=temperature,
+                do_sample=True,
+            )
+            generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+            thread = Thread(target=model.generate, kwargs=generation_kwargs)
+            return thread, streamer
+        except Exception as e:
+            raise RuntimeError(f"Failed to setup streaming generation: {str(e)}")
 
     def generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         return Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
