@@ -7,7 +7,7 @@ HERE = pathlib.Path(__file__).parent
 
 setup(
     name="predacons",
-    version="0.0.128",
+    version="0.0.129",
     description="A python library based on transformers for transfer learning",
     package_dir={"": "app"},
     packages=find_packages(where="app"),
@@ -26,7 +26,7 @@ setup(
                     "pandas >= 1.5.3",
                     "numpy >= 1.24.1",
                     "regex >= 2021.4.4",
-                    "PyPDF2 >= 3.0.1",
+                    "pypdf >= 5.3.0",
                     "docx >= 0.2.4",
                     "python-docx >= 1.0.1",
                     "transformers >= 4.29.1",

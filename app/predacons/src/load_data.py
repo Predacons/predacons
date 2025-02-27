@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import re
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 import os
 import docx
 
