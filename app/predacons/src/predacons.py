@@ -8,7 +8,7 @@ import pandas as pd
 
 def rollout():
     print("Predacons rollout !!!")
-    print("Predacons Version: v0.0.129")
+    print("Predacons Version: v0.0.130")
     print("\nread_documents_from_directory -- Load data from directory")
     print("    directory -- Directory path")
     print("\nread_multiple_files -- Load data from multiple files")

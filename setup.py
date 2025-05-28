@@ -7,7 +7,7 @@ HERE = pathlib.Path(__file__).parent
 
 setup(
     name="predacons",
-    version="0.0.129",
+    version="0.0.130",
     description="A python library based on transformers for transfer learning",
     package_dir={"": "app"},
     packages=find_packages(where="app"),
@@ -29,7 +29,7 @@ setup(
                     "pypdf >= 5.3.0",
                     "docx >= 0.2.4",
                     "python-docx >= 1.0.1",
-                    "transformers >= 4.29.1",
+                    "transformers >= 4.52.3",
                     "einops >= 0.7.0",
                     "openai >= 1.12.0",
                     # "torch >= 2.1.2", removed torch from install_requires so that it does not cuda version of torch
