@@ -190,6 +190,33 @@ class Generate:
             return thread, streamer
         except Exception as e:
             raise RuntimeError(f"Failed to setup streaming generation: {str(e)}")
+        
+    def __generate_output_with_processor(model, processor, messages, max_length, temperature=0.1):
+        inputs = processor.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=True,
+            return_dict=True, return_tensors="pt"
+        ).to(model.device, dtype=torch.bfloat16)
+        input_len = inputs["input_ids"].shape[-1]
+        with torch.inference_mode():
+            generation = model.generate(**inputs, max_new_tokens=max_length, do_sample=False, temperature=temperature)
+            generation = generation[0][input_len:]
+        decoded = processor.decode(generation, skip_special_tokens=True)
+        return decoded
+
+    def __generate_output_with_processor_stream(model, processor, messages, max_length, temperature=0.1):
+        inputs = processor.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=True,
+            return_dict=True, return_tensors="pt"
+        ).to(model.device, dtype=torch.bfloat16)
+        input_len = inputs["input_ids"].shape[-1]
+        streamer = TextIteratorStreamer(processor, skip_prompt=True, skip_special_tokens=True)
+        generation_config = GenerationConfig(
+            temperature=temperature,
+            do_sample=True,
+        )
+        generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+        thread = Thread(target=model.generate, kwargs=generation_kwargs)
+        return thread, streamer, input_len, processor
 
     def generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         return Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
@@ -224,3 +251,8 @@ class Generate:
     def generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=0.1,trust_remote_code=False):
         return Generate.__generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=temperature,trust_remote_code=trust_remote_code)
     
+    def generate_output_with_processor(model, processor, messages, max_length, temperature=0.1):
+        return Generate.__generate_output_with_processor(model, processor, messages, max_length, temperature)
+
+    def generate_output_with_processor_stream(model, processor, messages, max_length, temperature=0.1):
+        return Generate.__generate_output_with_processor_stream(model, processor, messages, max_length, temperature)
