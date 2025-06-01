@@ -59,7 +59,10 @@ for text in predacons.text_stream(model_path="path/to/your/model",
     print(text)
 
 # Get text streamer
-thread,streamer = predacons.text_generate(model=model, tokenizer = tokenizer, sequence = seq, max_length=100, temperature=0.1,stream=True)
+thread,streamer = predacons.text_generate(model=model, tokenizer=tokenizer, sequence=seq, max_length=100, temperature=0.1, stream=True)
+
+# You can also use a processor instead of a tokenizer for model-based generation:
+thread,streamer = predacons.text_generate(model=model, processor=processor, sequence=seq, max_length=100, temperature=0.1, stream=True)
 
 thread.start()
 try:
@@ -74,18 +77,31 @@ finally:
 chat = [
     {"role": "user", "content": "Hey, what is a car?"}
 ]
-chat_output = predacons.chat_generate(model = model,
-        sequence = chat,
-        max_length = 50,
-        tokenizer = tokenizers,
-        trust_remote_code = True)
+chat_output = predacons.chat_generate(model=model,
+        sequence=chat,
+        max_length=50,
+        tokenizer=tokenizers,
+        trust_remote_code=True)
+# You can also use a processor instead of a tokenizer for chat generation:
+chat_output = predacons.chat_generate(model=model,
+        sequence=chat,
+        max_length=50,
+        processor=processor,
+        trust_remote_code=True)
 
 # Stream chat generation using a trained model
-for chat in predacons.chat_stream(model = model,
-                                  sequence = chat,
-                                  max_length = 50,
-                                  tokenizer = tokenizers,
-                                  trust_remote_code = True):
+for chat in predacons.chat_stream(model=model,
+                                  sequence=chat,
+                                  max_length=50,
+                                  tokenizer=tokenizers,
+                                  trust_remote_code=True):
+    print(chat)
+# You can also use a processor instead of a tokenizer for chat streaming:
+for chat in predacons.chat_stream(model=model,
+                                  sequence=chat,
+                                  max_length=50,
+                                  processor=processor,
+                                  trust_remote_code=True):
     print(chat)
 
 # get chat streamer

@@ -77,6 +77,7 @@ def rollout():
     print("    draft_model_name -- Draft model name / path (default None)")
     print("    model -- give a preloaded Model (default None)")
     print("    tokenizer -- give a preloaded Tokenizer (default None)")
+    print("    processor -- give a preloaded Processor (default None), alternative to tokenizer for model-based generation")
     print("\ntext_generate -- Generate text and print")
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
@@ -86,6 +87,7 @@ def rollout():
     print("    draft_model_name -- Draft model name / path (default None)")
     print("    model -- give a preloaded Model (default None)")
     print("    tokenizer -- give a preloaded Tokenizer (default None)")
+    print("    processor -- give a preloaded Processor (default None), alternative to tokenizer for model-based generation")
     print("\ntext_stream -- stream text and print")
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
@@ -391,14 +393,15 @@ def generate(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
         auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-        stream (bool, optional): Whether to stream the output. Defaults to False. if True, thread and streamer will be returned.
+        stream (bool, optional): Whether to stream the output. Defaults to False. If True, thread and streamer will be returned.
 
     Returns:
-        str: The generated output.
+        str or tuple: The generated output, or (thread, streamer) if streaming is enabled.
 
     Raises:
         ValueError: If the arguments are invalid.
@@ -500,11 +503,12 @@ def text_generate(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
         auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-        stream (bool, optional): Whether to stream the output. Defaults to False. if True, thread and streamer will be returned.
+        stream (bool, optional): Whether to stream the output. Defaults to False. If True, thread and streamer will be returned.
     Returns:
         str: The generated text.
         or
@@ -562,6 +566,7 @@ def text_stream(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
@@ -601,11 +606,11 @@ def chat_generate(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
         auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-    
     Returns:
         str: The generated chat .
         or
@@ -646,6 +651,7 @@ def chat_stream(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
@@ -656,7 +662,6 @@ def chat_stream(*args, **kwargs):
         or
         thread: The thread object.
         streamer: The streamer object.
-
     """
     kwargs['stream'] = True
     kwargs['apply_chat_template'] = True
@@ -753,5 +758,5 @@ def load_processor(processor_path,use_fast=False,gguf_file=None):
         processor: The loaded processor object.
     """
     return Generate.load_processor(processor_path,use_fast=use_fast,gguf_file=gguf_file)
- 
+
 
