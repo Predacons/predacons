@@ -49,9 +49,8 @@ class Generate:
         return tokenizer
     
     def __load_processor(tokenizer_path,use_fast=False,gguf_file=None):
-        tokenizer = AutoProcessor.from_pretrained(tokenizer_path,use_fast =use_fast,gguf_file=gguf_file)
-        return tokenizer
-    
+        processor = AutoProcessor.from_pretrained(tokenizer_path, use_fast=use_fast, gguf_file=gguf_file)
+        return processor
     def __generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
         tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
