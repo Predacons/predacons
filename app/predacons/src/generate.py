@@ -218,7 +218,6 @@ class Generate:
                 messages, add_generation_prompt=True, tokenize=True,
                 return_dict=True, return_tensors="pt"
             ).to(model.device, dtype=torch.bfloat16)
-            input_len = inputs["input_ids"].shape[-1]
             streamer = TextIteratorStreamer(processor, skip_prompt=True, skip_special_tokens=True)
             generation_config = GenerationConfig(
                 temperature=temperature,
@@ -229,7 +228,6 @@ class Generate:
             return thread, streamer
         except Exception as e:
             raise RuntimeError(f"Failed to generate output with processor stream: {str(e)}")
-    
     def generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         return Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
     
