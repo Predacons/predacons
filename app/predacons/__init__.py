@@ -15,6 +15,7 @@ from .src.predacons import (
     generate_text_data_source_llm,
     load_model,
     load_tokenizer,
+    load_processor,
     generate,
     text_generate,
     chat_generate,

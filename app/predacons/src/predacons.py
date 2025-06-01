@@ -77,6 +77,7 @@ def rollout():
     print("    draft_model_name -- Draft model name / path (default None)")
     print("    model -- give a preloaded Model (default None)")
     print("    tokenizer -- give a preloaded Tokenizer (default None)")
+    print("    processor -- give a preloaded Processor (default None), alternative to tokenizer for model-based generation")
     print("\ntext_generate -- Generate text and print")
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
@@ -86,6 +87,7 @@ def rollout():
     print("    draft_model_name -- Draft model name / path (default None)")
     print("    model -- give a preloaded Model (default None)")
     print("    tokenizer -- give a preloaded Tokenizer (default None)")
+    print("    processor -- give a preloaded Processor (default None), alternative to tokenizer for model-based generation")
     print("\ntext_stream -- stream text and print")
     print("    model_path -- Model path")
     print("    sequence -- Sequence")
@@ -391,19 +393,20 @@ def generate(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
         auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-        stream (bool, optional): Whether to stream the output. Defaults to False. if True, thread and streamer will be returned.
+        stream (bool, optional): Whether to stream the output. Defaults to False. If True, thread and streamer will be returned.
 
     Returns:
-        str: The generated output.
+        str or tuple: The generated output, or (thread, streamer) if streaming is enabled.
 
     Raises:
         ValueError: If the arguments are invalid.
     """
-    if 'model_path' in kwargs and ('sequence' or 'chat') in kwargs:
+    if 'model_path' in kwargs and ('sequence' in kwargs or 'chat' in kwargs):
         model_path = kwargs['model_path']
         sequence = kwargs['sequence']
         max_length = kwargs.get('max_length', 50)
@@ -435,33 +438,51 @@ def generate(*args, **kwargs):
                 return Generate.generate_output_stream(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file,auto_quantize=auto_quantize)
             return Generate.generate_output(model_path, sequence, max_length,trust_remote_code = trust_remote_code,gguf_file = gguf_file,auto_quantize=auto_quantize) 
     
-    elif 'model' in kwargs and 'tokenizer' in kwargs and 'sequence' in kwargs:
+    elif 'model' in kwargs and 'sequence' in kwargs:
         model = kwargs['model']
-        tokenizer = kwargs['tokenizer']
         sequence = kwargs['sequence']
         max_length = kwargs.get('max_length', 50)
         trust_remote_code = kwargs.get('trust_remote_code', False)
         apply_chat_template = kwargs.get('apply_chat_template',False)
         temperature= kwargs.get('temperature',0.1)
         stream = kwargs.get('stream',False)
-        if apply_chat_template == True:
-            if stream:
-                return Generate.generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature = temperature,trust_remote_code=trust_remote_code)
-            return Generate.generate_chat_output_from_model(model, tokenizer, sequence, max_length,temperature = temperature,trust_remote_code=trust_remote_code)
-        try:
-            if type(model) == torch._dynamo.eval_frame.OptimizedModule:
-                print("generate_output using fast generation")
-                return GPTFast.generate_output_from_model(model, tokenizer, sequence, max_length)
-            else:
+        processor = kwargs.get('processor', None)
+        tokenizer = kwargs.get('tokenizer', None)
+        if processor is not None:
+            if apply_chat_template:
                 if stream:
-                    return Generate.generate_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
-                return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
-        except Exception as e:
-            print("Exception occurred while loading torch._dynamo.eval_frame.OptimizedModule")
-            print("generate_output using default generation")
-            if stream:
-                return Generate.generate_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
-            return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+                    return Generate.generate_output_with_processor_stream(model, processor, sequence, max_length, temperature=temperature)
+                return Generate.generate_output_with_processor(model, processor, sequence, max_length, temperature=temperature)
+            else:
+                # If not chat, fallback to tokenizer if available
+                if tokenizer is not None:
+                    if stream:
+                        return Generate.generate_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+                    return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+                else:
+                    raise ValueError("Processor-based generation requires apply_chat_template=True or a tokenizer.")
+        else:
+            if tokenizer is not None:
+                if apply_chat_template:
+                    if stream:
+                        return Generate.generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature = temperature,trust_remote_code=trust_remote_code)
+                    return Generate.generate_chat_output_from_model(model, tokenizer, sequence, max_length,temperature = temperature,trust_remote_code=trust_remote_code)
+                try:
+                    if type(model) == torch._dynamo.eval_frame.OptimizedModule:
+                        print("generate_output using fast generation")
+                        return GPTFast.generate_output_from_model(model, tokenizer, sequence, max_length)
+                    else:
+                        if stream:
+                            return Generate.generate_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+                        return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+                except Exception as e:
+                    print("Exception occurred while loading torch._dynamo.eval_frame.OptimizedModule")
+                    print("generate_output using default generation")
+                    if stream:
+                        return Generate.generate_output_from_model_stream(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+                    return Generate.generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=trust_remote_code)
+            else:
+                raise ValueError("Must provide either a processor or tokenizer with model.")
     else:
         raise ValueError("Invalid arguments")
     
@@ -482,11 +503,12 @@ def text_generate(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
         auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-        stream (bool, optional): Whether to stream the output. Defaults to False. if True, thread and streamer will be returned.
+        stream (bool, optional): Whether to stream the output. Defaults to False. If True, thread and streamer will be returned.
     Returns:
         str: The generated text.
         or
@@ -498,9 +520,24 @@ def text_generate(*args, **kwargs):
     if stream:
         thread, streamer = generate(*args, **kwargs)
         return thread, streamer
-    output, tokenizer = generate(*args, **kwargs)
-    print(tokenizer.decode(output[0], skip_special_tokens=True))
-    return tokenizer.decode(output[0], skip_special_tokens=True)
+    result = generate(*args, **kwargs)
+    # result can be (output, tokenizer) or (inputs, output, tokenizer) or (inputs, output, processor)
+    if isinstance(result, tuple):
+        if len(result) == 2:
+            output, tok = result
+            if hasattr(tok, 'decode'):
+                print(tok.decode(output[0], skip_special_tokens=True))
+                return tok.decode(output[0], skip_special_tokens=True)
+            else:
+                return output
+        elif len(result) == 3:
+            inputs, output, tok = result
+            if hasattr(tok, 'decode'):
+                print(tok.decode(output[0][inputs['input_ids'].size(1):], skip_special_tokens=True))
+                return tok.decode(output[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
+            else:
+                return output
+    return result
 def _handle_stream(thread, streamer):
     """Internal utility to handle streaming output."""
     thread.start()
@@ -529,6 +566,7 @@ def text_stream(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
@@ -568,11 +606,11 @@ def chat_generate(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
         auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-    
     Returns:
         str: The generated chat .
         or
@@ -586,10 +624,16 @@ def chat_generate(*args, **kwargs):
         thread, streamer = generate(*args, **kwargs)
         return thread, streamer
     dont_print_output = kwargs.get('dont_print_output', False)
-    input,output, tokenizer = generate(*args, **kwargs)
-    if not dont_print_output:
-        print(tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True))
-    return tokenizer.decode(output[0][input['input_ids'].size(1):], skip_special_tokens=True)
+    result = generate(*args, **kwargs)
+    if isinstance(result, tuple) and len(result) == 3:
+        inputs, output, tok = result
+        if hasattr(tok, 'decode'):
+            if not dont_print_output:
+                print(tok.decode(output[0][inputs['input_ids'].size(1):], skip_special_tokens=True))
+            return tok.decode(output[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
+        else:
+            return output
+    return result
 def chat_stream(*args, **kwargs):
     """
     stream text using the specified arguments.
@@ -607,6 +651,7 @@ def chat_stream(*args, **kwargs):
         draft_model_name (str, optional): The name of the draft model. Defaults to None.
         model (object): The model object.
         tokenizer (object): The tokenizer object.
+        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
         apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
         temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
         gguf_file (str, optional): The path to the GGUF file. Defaults to None.
@@ -617,7 +662,6 @@ def chat_stream(*args, **kwargs):
         or
         thread: The thread object.
         streamer: The streamer object.
-
     """
     kwargs['stream'] = True
     kwargs['apply_chat_template'] = True
@@ -701,4 +745,18 @@ def load_tokenizer(tokenizer_path,gguf_file=None):
     """
     return Generate.load_tokenizer(tokenizer_path,gguf_file=gguf_file)
  
+def load_processor(processor_path,use_fast=False,gguf_file=None):
+    """
+    Loads a processor from the specified path.
+
+    Args:
+        processor_path (str): The path to the processor file.
+        use_fast (bool, optional): Whether to use fast processing. Defaults to False.
+        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
+
+    Returns:
+        processor: The loaded processor object.
+    """
+    return Generate.load_processor(processor_path,use_fast=use_fast,gguf_file=gguf_file)
+
 

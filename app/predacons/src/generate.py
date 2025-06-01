@@ -1,4 +1,4 @@
-from transformers import AutoModelForPreTraining, AutoTokenizer,AutoModelForCausalLM,BitsAndBytesConfig,TextIteratorStreamer,GenerationConfig
+from transformers import AutoModelForPreTraining, AutoTokenizer,AutoModelForCausalLM,BitsAndBytesConfig,TextIteratorStreamer,GenerationConfig,AutoProcessor
 import torch
 from threading import Thread
 
@@ -48,6 +48,9 @@ class Generate:
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_path,gguf_file=gguf_file)
         return tokenizer
     
+    def __load_processor(tokenizer_path,use_fast=False,gguf_file=None):
+        processor = AutoProcessor.from_pretrained(tokenizer_path, use_fast=use_fast, gguf_file=gguf_file)
+        return processor
     def __generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
         tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
@@ -190,7 +193,41 @@ class Generate:
             return thread, streamer
         except Exception as e:
             raise RuntimeError(f"Failed to setup streaming generation: {str(e)}")
+        
+    def __generate_output_with_processor(model, processor, messages, max_length, temperature=0.1):
+        try:
+            if processor.chat_template is None:
+                print("Warning: Chat template not found in processor. Applying default chat template")
+                processor.chat_template = Generate.default_chat_template
+            inputs = processor.apply_chat_template(
+                messages, add_generation_prompt=True, tokenize=True,
+                return_dict=True, return_tensors="pt"
+            ).to(model.device, dtype=torch.bfloat16)
+            with torch.inference_mode():
+                final_outputs = model.generate(**inputs, max_new_tokens=max_length, do_sample=False, temperature=temperature)
+            return inputs, final_outputs, processor
+        except Exception as e:
+            raise RuntimeError(f"Failed to generate output with processor: {str(e)}")
 
+    def __generate_output_with_processor_stream(model, processor, messages, max_length, temperature=0.1):
+        try:
+            if processor.chat_template is None:
+                print("Warning: Chat template not found in processor. Applying default chat template")
+                processor.chat_template = Generate.default_chat_template
+            inputs = processor.apply_chat_template(
+                messages, add_generation_prompt=True, tokenize=True,
+                return_dict=True, return_tensors="pt"
+            ).to(model.device, dtype=torch.bfloat16)
+            streamer = TextIteratorStreamer(processor, skip_prompt=True, skip_special_tokens=True)
+            generation_config = GenerationConfig(
+                temperature=temperature,
+                do_sample=True,
+            )
+            generation_kwargs = dict(inputs, streamer=streamer, max_new_tokens=max_length, generation_config=generation_config)
+            thread = Thread(target=model.generate, kwargs=generation_kwargs)
+            return thread, streamer
+        except Exception as e:
+            raise RuntimeError(f"Failed to generate output with processor stream: {str(e)}")
     def generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
         return Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
     
@@ -202,6 +239,9 @@ class Generate:
     
     def load_tokenizer(tokenizer_path,gguf_file=None):
         return Generate.__load_tokenizer(tokenizer_path,gguf_file=gguf_file)
+    
+    def load_processor(tokenizer_path,use_fast=False,gguf_file=None):
+        return Generate.__load_processor(tokenizer_path,use_fast=use_fast,gguf_file=gguf_file)
     
     def load_model(model_path,trust_remote_code=False,gguf_file = None,auto_quantize=None):
         return Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
@@ -224,3 +264,8 @@ class Generate:
     def generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=0.1,trust_remote_code=False):
         return Generate.__generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=temperature,trust_remote_code=trust_remote_code)
     
+    def generate_output_with_processor(model, processor, messages, max_length, temperature=0.1):
+        return Generate.__generate_output_with_processor(model, processor, messages, max_length, temperature)
+
+    def generate_output_with_processor_stream(model, processor, messages, max_length, temperature=0.1):
+        return Generate.__generate_output_with_processor_stream(model, processor, messages, max_length, temperature)
