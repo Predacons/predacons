@@ -45,13 +45,47 @@ class Generate:
 
 
     def __load_tokenizer(tokenizer_path,gguf_file=None):
+        """
+        Loads a tokenizer from the specified path.
+        
+        Args:
+            tokenizer_path: Path to the pretrained tokenizer.
+            gguf_file: Optional file for GGUF format support.
+        
+        Returns:
+            The loaded tokenizer instance.
+        """
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_path,gguf_file=gguf_file)
         return tokenizer
     
     def __load_processor(tokenizer_path,use_fast=False,gguf_file=None):
+        """
+        Loads a processor from the specified path.
+        
+        Args:
+            tokenizer_path: Path to the pretrained processor or model directory.
+            use_fast: Whether to use the fast implementation if available.
+            gguf_file: Optional GGUF file for processor configuration.
+        
+        Returns:
+            An instance of AutoProcessor loaded from the given path.
+        """
         processor = AutoProcessor.from_pretrained(tokenizer_path, use_fast=use_fast, gguf_file=gguf_file)
         return processor
     def __generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
+        """
+        Generates output token IDs from a pretrained model given an input sequence.
+        
+        Loads the specified model and tokenizer, encodes the input sequence, and generates output tokens using sampling with top-k and top-p settings.
+        
+        Args:
+            model_path: Path to the pretrained model.
+            sequence: Input text sequence to generate output from.
+            max_length: Maximum length of the generated output.
+        
+        Returns:
+            A tuple containing the generated output token IDs and the tokenizer used.
+        """
         model = Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
         tokenizer = Generate.__load_tokenizer(model_path,gguf_file=gguf_file)
         ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
@@ -175,6 +209,14 @@ class Generate:
         return inputs,final_outputs,tokenizer
     
     def __generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=0.1,trust_remote_code=False):
+        """
+        Streams chat-style text generation from a model using a tokenizer and input sequence.
+        
+        Formats the input sequence as a chat prompt using a chat template, tokenizes it, and initiates streaming generation in a separate thread. Returns the thread and a streamer for consuming generated text in real time.
+        
+        Raises:
+            RuntimeError: If streaming generation setup fails.
+        """
         try:
             # ids = tokenizer.encode(f'{sequence}', return_tensors='pt')
             if tokenizer.chat_template is None:
@@ -195,6 +237,11 @@ class Generate:
             raise RuntimeError(f"Failed to setup streaming generation: {str(e)}")
         
     def __generate_output_with_processor(model, processor, messages, max_length, temperature=0.1):
+        """
+        Generates model outputs from chat messages using a processor for input preparation.
+        
+        If the processor lacks a chat template, a default template is applied. The messages are formatted and tokenized using the processor, moved to the model's device, and passed to the model for generation without sampling. Returns the prepared inputs, generated outputs, and the processor.
+        """
         try:
             if processor.chat_template is None:
                 print("Warning: Chat template not found in processor. Applying default chat template")
@@ -210,6 +257,14 @@ class Generate:
             raise RuntimeError(f"Failed to generate output with processor: {str(e)}")
 
     def __generate_output_with_processor_stream(model, processor, messages, max_length, temperature=0.1):
+        """
+        Performs streaming text generation using a processor and a language model.
+        
+        Applies a chat template to the input messages, tokenizes them, and initiates streaming generation in a separate thread. Returns the thread and a streamer for consuming generated text in real time.
+        
+        Raises:
+            RuntimeError: If streaming generation setup fails.
+        """
         try:
             if processor.chat_template is None:
                 print("Warning: Chat template not found in processor. Applying default chat template")
@@ -229,6 +284,14 @@ class Generate:
         except Exception as e:
             raise RuntimeError(f"Failed to generate output with processor stream: {str(e)}")
     def generate_output(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
+        """
+        Generates output token IDs from a language model given an input sequence.
+        
+        Loads the specified model and tokenizer, encodes the input sequence, and generates output tokens using sampling with a maximum output length.
+        
+        Returns:
+            A tuple containing the generated token IDs and the tokenizer instance.
+        """
         return Generate.__generate_output(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
     
     def generate_output_stream(model_path, sequence, max_length,trust_remote_code=False,gguf_file=None,auto_quantize=None):
@@ -238,12 +301,45 @@ class Generate:
         return Generate.__generate_text(model_path, sequence, max_length,trust_remote_code=trust_remote_code,gguf_file=gguf_file)
     
     def load_tokenizer(tokenizer_path,gguf_file=None):
+        """
+        Loads and returns a tokenizer from the specified path.
+        
+        Args:
+            tokenizer_path: Path to the tokenizer directory or file.
+            gguf_file: Optional file for GGUF format support.
+        
+        Returns:
+            The loaded tokenizer instance.
+        """
         return Generate.__load_tokenizer(tokenizer_path,gguf_file=gguf_file)
     
     def load_processor(tokenizer_path,use_fast=False,gguf_file=None):
+        """
+        Loads and returns a processor from the specified path.
+        
+        Args:
+            tokenizer_path: Path to the processor or tokenizer directory.
+            use_fast: Whether to use the fast implementation, if available.
+            gguf_file: Optional path to a GGUF file for processor configuration.
+        
+        Returns:
+            An instance of the loaded processor.
+        """
         return Generate.__load_processor(tokenizer_path,use_fast=use_fast,gguf_file=gguf_file)
     
     def load_model(model_path,trust_remote_code=False,gguf_file = None,auto_quantize=None):
+        """
+        Loads a pretrained model from the specified path with optional quantization and trust settings.
+        
+        Args:
+            model_path: Path to the pretrained model directory or file.
+            trust_remote_code: Whether to allow execution of custom code from the model repository.
+            gguf_file: Optional file for GGUF format models.
+            auto_quantize: Optional quantization mode ("4bit", "8bit", "high", "low").
+        
+        Returns:
+            The loaded model instance.
+        """
         return Generate.__load_model(model_path,trust_remote_code=trust_remote_code,gguf_file=gguf_file,auto_quantize=auto_quantize)
     
     def generate_output_from_model(model, tokenizer, sequence, max_length,trust_remote_code=False):
@@ -262,10 +358,33 @@ class Generate:
         return Generate.__generate_chat_output_from_model(model, tokenizer, sequence, max_length,temperature=temperature,trust_remote_code=trust_remote_code)
     
     def generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=0.1,trust_remote_code=False):
+        """
+        Streams chat-style text generation output from a pre-loaded model and tokenizer.
+        
+        Returns:
+            A tuple containing the thread handling generation and a streamer for iterating over generated text.
+        """
         return Generate.__generate_chat_output_from_model_stream(model, tokenizer, sequence, max_length,temperature=temperature,trust_remote_code=trust_remote_code)
     
     def generate_output_with_processor(model, processor, messages, max_length, temperature=0.1):
+        """
+        Generates text output from a model using a processor and a list of chat messages.
+        
+        Args:
+            messages: A list of chat messages to be processed and used as input.
+            max_length: The maximum number of tokens to generate.
+            temperature: Sampling temperature for generation, controlling randomness.
+        
+        Returns:
+            A tuple containing the processed input tensors, generated output tensors, and the processor instance.
+        """
         return Generate.__generate_output_with_processor(model, processor, messages, max_length, temperature)
 
     def generate_output_with_processor_stream(model, processor, messages, max_length, temperature=0.1):
+        """
+        Streams generated text output from a model using a processor and chat-style messages.
+        
+        Returns:
+            A tuple containing the thread handling generation and a streamer for iterating over generated text.
+        """
         return Generate.__generate_output_with_processor_stream(model, processor, messages, max_length, temperature)

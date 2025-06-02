@@ -7,6 +7,11 @@ import torch
 import pandas as pd
 
 def rollout():
+    """
+    Prints version information and a comprehensive usage guide for all available Predacons functions.
+    
+    Displays descriptions and parameter details for data loading, training, text generation, streaming, chat, model/tokenizer loading, and data preparation functions provided by the Predacons module.
+    """
     print("Predacons rollout !!!")
     print("Predacons Version: v0.0.130")
     print("\nread_documents_from_directory -- Load data from directory")
@@ -378,33 +383,19 @@ def generate_output(model_path, sequence, max_length,trust_remote_code = False,u
 
 def generate(*args, **kwargs):
     """
-    Generates output based on the provided arguments.
-
+    Generates text output using a model path or preloaded model, supporting chat templates, streaming, and fast generation.
+    
+    Depending on the provided arguments, this function can generate text from a model path or a preloaded model object. It supports chat-style output, streaming results, speculative decoding (fast generation), quantization, and GGUF file integration. When using a preloaded model, either a tokenizer or processor must be provided. Raises a ValueError if required arguments are missing or invalid.
+    
     Args:
-        *args: Variable length arguments.
-        **kwargs: Keyword arguments.
-
-    Keyword Args:
-        model_path (str): The path to the model file.
-        sequence (str): The input sequence to generate output from.
-        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
-        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
-        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
-        draft_model_name (str, optional): The name of the draft model. Defaults to None.
-        model (object): The model object.
-        tokenizer (object): The tokenizer object.
-        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
-        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
-        temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
-        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
-        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-        stream (bool, optional): Whether to stream the output. Defaults to False. If True, thread and streamer will be returned.
-
+        *args: Positional arguments (not used directly).
+        **kwargs: Keyword arguments controlling generation behavior.
+    
     Returns:
-        str or tuple: The generated output, or (thread, streamer) if streaming is enabled.
-
+        The generated text output, or a (thread, streamer) tuple if streaming is enabled.
+    
     Raises:
-        ValueError: If the arguments are invalid.
+        ValueError: If required arguments are missing or invalid.
     """
     if 'model_path' in kwargs and ('sequence' in kwargs or 'chat' in kwargs):
         model_path = kwargs['model_path']
@@ -488,33 +479,9 @@ def generate(*args, **kwargs):
     
 def text_generate(*args, **kwargs):
     """
-    Generate text using the specified arguments.
-
-    Args:
-        *args: Variable length argument list.
-        **kwargs: Arbitrary keyword arguments.
-
-    Keyword Args:
-        model_path (str): The path to the model file.
-        sequence (str): The input sequence to generate output from.
-        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
-        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
-        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
-        draft_model_name (str, optional): The name of the draft model. Defaults to None.
-        model (object): The model object.
-        tokenizer (object): The tokenizer object.
-        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
-        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
-        temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
-        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
-        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-        stream (bool, optional): Whether to stream the output. Defaults to False. If True, thread and streamer will be returned.
-    Returns:
-        str: The generated text.
-        or
-        thread: The thread object.
-        streamer: The streamer object.
-
+    Generates text using the provided model, tokenizer, or processor, and prints the decoded output if possible.
+    
+    Supports both standard and streaming generation modes. If streaming is enabled, returns the streaming thread and streamer objects; otherwise, prints and returns the decoded text when possible, or the raw output.
     """
     stream = kwargs.get('stream',False)
     if stream:
@@ -539,7 +506,16 @@ def text_generate(*args, **kwargs):
                 return output
     return result
 def _handle_stream(thread, streamer):
-    """Internal utility to handle streaming output."""
+    """
+    Starts a streaming thread and prints streamed text output incrementally.
+    
+    Args:
+        thread: The thread responsible for generating streamed output.
+        streamer: An iterable yielding chunks of text as they are generated.
+    
+    Returns:
+        The full concatenated output text after streaming is complete.
+    """
     thread.start()
     try:
         out = ""
@@ -551,33 +527,17 @@ def _handle_stream(thread, streamer):
         thread.join()
 def text_stream(*args, **kwargs):
     """
-    stream text using the specified arguments.
-
+    Streams generated text output using the provided arguments.
+    
+    Enables streaming mode for text generation and returns either the streaming objects or prints the streamed output incrementally, depending on the `return_streamer` flag.
+    
     Args:
-        *args: Variable length argument list.
-        **kwargs: Arbitrary keyword arguments.
-
-    Keyword Args:
-        model_path (str): The path to the model file.
-        sequence (str): The input sequence to generate output from.
-        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
-        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
-        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
-        draft_model_name (str, optional): The name of the draft model. Defaults to None.
-        model (object): The model object.
-        tokenizer (object): The tokenizer object.
-        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
-        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
-        temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
-        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
-        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-        return_streamer (bool, optional): Whether to return the streamer instead of printing the text. Defaults to False.
+        *args: Positional arguments forwarded to the generation function.
+        **kwargs: Keyword arguments for generation configuration.
+    
     Returns:
-        str: The generated text.
-        or
-        thread: The thread object.
-        streamer: The streamer object.
-
+        If `return_streamer` is True, returns the streaming thread and streamer objects.
+        Otherwise, prints the streamed output and returns the final text.
     """
     kwargs['stream'] = True
     
@@ -590,33 +550,16 @@ def text_stream(*args, **kwargs):
 
 def chat_generate(*args, **kwargs):
     """
-    Generate chat  using the specified arguments.
-
+    Generates chat-style output using the specified model and input sequence.
+    
+    If streaming is enabled, returns the streaming thread and streamer objects. Otherwise, returns the generated chat output as a string, decoding it if possible. The function automatically applies a chat template to the input.
+    
     Args:
-        *args: Variable length argument list.
-        **kwargs: Arbitrary keyword arguments.
-
-    Keyword Args:
-        model_path (str): The path to the model file.
-        sequence (str): The input sequence to generate output from.
-        dont_print_output (bool, optional): Whether to print the output. Defaults to False.
-        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
-        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
-        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
-        draft_model_name (str, optional): The name of the draft model. Defaults to None.
-        model (object): The model object.
-        tokenizer (object): The tokenizer object.
-        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
-        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
-        temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
-        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
-        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
+        *args: Positional arguments forwarded to the underlying generation function.
+        **kwargs: Keyword arguments for generation configuration.
+    
     Returns:
-        str: The generated chat .
-        or
-        thread: The thread object.
-        streamer: The streamer object.
-
+        The generated chat output as a string, or a tuple of (thread, streamer) if streaming is enabled.
     """
     kwargs['apply_chat_template'] = True
     stream = kwargs.get('stream',False)
@@ -636,32 +579,13 @@ def chat_generate(*args, **kwargs):
     return result
 def chat_stream(*args, **kwargs):
     """
-    stream text using the specified arguments.
-
-    Args:
-        *args: Variable length argument list.
-        **kwargs: Arbitrary keyword arguments.
-
-    Keyword Args:
-        model_path (str): The path to the model file.
-        sequence (str): The input sequence to generate output from.
-        max_length (int, optional): The maximum length of the generated output. Defaults to 50.
-        trust_remote_code (bool, optional): Whether to trust remote code. Defaults to False.
-        use_fast_generation (bool, optional): Whether to use fast generation. Defaults to False.
-        draft_model_name (str, optional): The name of the draft model. Defaults to None.
-        model (object): The model object.
-        tokenizer (object): The tokenizer object.
-        processor (object): The processor object. Alternative to tokenizer for model-based generation. If provided, will be used for generation instead of tokenizer.
-        apply_chat_template (bool, optional): Whether to apply the chat template. Defaults to False.
-        temperature (float, optional): The temperature parameter for controlling the randomness of the generated output. Defaults to 0.1.
-        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
-        auto_quantize (str, optional): Automatically apply quantization. Accepts "4bit"/"high" for high compression or "8bit"/"low" for lower compression. Defaults to None.
-        return_streamer (bool, optional): Whether to return the streamer instead of printing the text. Defaults to False.
+    Streams chat-style text generation using the provided arguments.
+    
+    Enables both streaming and chat template application, returning either the streaming objects or printing the streamed output incrementally.
+    
     Returns:
-        str: The generated text.
-        or
-        thread: The thread object.
-        streamer: The streamer object.
+        If `return_streamer` is True, returns the streaming thread and streamer objects.
+        Otherwise, prints the streamed output and returns the final result.
     """
     kwargs['stream'] = True
     kwargs['apply_chat_template'] = True
@@ -735,27 +659,28 @@ def load_model(model_path,trust_remote_code=False,use_fast_generation=False, dra
 
 def load_tokenizer(tokenizer_path,gguf_file=None):
     """
-    Loads a tokenizer from the specified path.
-
+    Loads a tokenizer from the given path.
+    
     Args:
-        tokenizer_path (str): The path to the tokenizer file.
-
+        tokenizer_path: Path to the tokenizer file.
+        gguf_file: Optional GGUF file for tokenizer configuration.
+    
     Returns:
-        Tokenizer: The loaded tokenizer object.
+        The loaded tokenizer object.
     """
     return Generate.load_tokenizer(tokenizer_path,gguf_file=gguf_file)
  
 def load_processor(processor_path,use_fast=False,gguf_file=None):
     """
-    Loads a processor from the specified path.
-
+    Loads a processor from a given path with optional fast processing and GGUF file support.
+    
     Args:
-        processor_path (str): The path to the processor file.
-        use_fast (bool, optional): Whether to use fast processing. Defaults to False.
-        gguf_file (str, optional): The path to the GGUF file. Defaults to None.
-
+        processor_path: Path to the processor file.
+        use_fast: If True, enables fast processing mode.
+        gguf_file: Optional path to a GGUF file for processor configuration.
+    
     Returns:
-        processor: The loaded processor object.
+        The loaded processor object.
     """
     return Generate.load_processor(processor_path,use_fast=use_fast,gguf_file=gguf_file)
 
